@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#172554">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>LessonToPPT Studio Hybrid Pro — Content Safe</title>
+<title>LessonToPPT Studio Hybrid Pro — Claude Edition</title>
 <link rel="manifest" href="data:application/manifest+json;utf8,{%22name%22:%22LessonToPPT%20Hybrid%22,%22short_name%22:%22LessonToPPT%22,%22start_url%22:%22./%22,%22display%22:%22standalone%22,%22background_color%22:%22#172554%22,%22theme_color%22:%22#172554%22}">
 <style>
 :root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#65718a;--line:#e1e7f0;--brand:#3949ab;--accent:#168c9a}
@@ -41,12 +41,12 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 </header>
 <main>
 <section class="card">
- <h2>01 · Clé API Google Gemini</h2>
- <p class="sub">Entrez votre clé API pour utiliser Gemini cloud.</p>
- <div class="field" id="geminiSettings">
-  <label for="apiKey">Clé API Google Gemini</label>
+ <h2>01 · Clé API Anthropic Claude</h2>
+ <p class="sub">Entrez une clé API Anthropic pour utiliser Claude.</p>
+ <div class="field" id="claudeSettings">
+  <label for="apiKey">Clé API Anthropic Claude</label>
   <div style="display:flex;gap:10px;">
-   <input id="apiKey" type="password" placeholder="AIzaSy...">
+   <input id="apiKey" type="password" placeholder="sk-ant-...">
    <button id="saveKey" style="width:140px;padding:0 12px;">Enregistrer</button>
   </div>
   <p class="muted" style="margin-top:6px;">Obtenez une clé sur <a href="https://aistudio.google.com/" target="_blank" rel="noopener" style="color:#3949ab;">Google AI Studio</a>. Attention : l'enregistrement la conserve dans le stockage local du navigateur. Ne partagez pas cette page avec votre clé et n'utilisez pas cette méthode pour un service public.</p>
@@ -103,14 +103,14 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 const $=id=>document.getElementById(id);
 
 window.addEventListener("DOMContentLoaded",()=>{
- const saved=localStorage.getItem("gemini_api_key");
+ const saved=localStorage.getItem("claude_api_key");
  if(saved) $("apiKey").value=saved;
 });
 
 $("saveKey").addEventListener("click",()=>{
  const key=$("apiKey").value.trim();
- if(key){localStorage.setItem("gemini_api_key",key);alert("Clé API enregistrée !");}
- else{localStorage.removeItem("gemini_api_key");alert("Clé API supprimée.");}
+ if(key){localStorage.setItem("claude_api_key",key);alert("Clé API Claude enregistrée localement.");}
+ else{localStorage.removeItem("claude_api_key");alert("Clé API Claude supprimée.");}
 });
 
 document.querySelectorAll(".tab-btn").forEach(btn=>{
@@ -204,8 +204,8 @@ async function extract(file,ext){
 }
 
 async function callAI(rawText,userTitle,isTopic=false,segmentInfo="") {
- const apiKey=$("apiKey").value.trim()||localStorage.getItem("gemini_api_key");
- if(!apiKey)throw Error("Veuillez renseigner votre clé API Google Gemini.");
+ const apiKey=$("apiKey").value.trim()||localStorage.getItem("claude_api_key");
+ if(!apiKey)throw Error("Veuillez renseigner votre clé API Anthropic Claude.");
 
  const sourceLanguage=/[\u0600-\u06FF]/.test(rawText)?"arabe":(/[àâçéèêëîïôûùüÿœæ]/i.test(rawText)?"français":"langue d'origine du texte source");
  const prompt=`Tu es un spécialiste de la création de diapositives pédagogiques professionnelles. Transforme le segment fourni en diapositives PowerPoint.
@@ -232,61 +232,63 @@ Sujet ou contenu source à préserver intégralement :
 ${rawText}
 Titre demandé : ${userTitle||"Cours"}`;
 
- setStatus("Analyse par Google Gemini...","info");
- setProgress("Envoi du contenu à Gemini...");
+ setStatus("Analyse par Anthropic Claude...","info");
+ setProgress("Envoi du contenu à Claude...");
 
- // Modèle stable documenté par Google ; endpoint REST v1beta.
- const url="https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
+ // Anthropic Messages API. Le modèle peut être modifié ici si nécessaire.
+ const url="https://api.anthropic.com/v1/messages";
  let response;
  const controller=new AbortController();
  const timeoutId=setTimeout(()=>controller.abort(),90000);
  try{
   response=await fetch(url,{
    method:"POST",
-   headers:{"Content-Type":"application/json","x-goog-api-key":apiKey},
+   headers:{
+    "Content-Type":"application/json",
+    "x-api-key":apiKey,
+    "anthropic-version":"2023-06-01",
+    "anthropic-dangerous-direct-browser-access":"true"
+   },
    signal:controller.signal,
    body:JSON.stringify({
-    contents:[{role:"user",parts:[{text:prompt}]}],
-    generationConfig:{
-     responseMimeType:"application/json",
-     temperature:0.2,
-     maxOutputTokens:8192
-    }
+    model:"claude-sonnet-5-5",
+    max_tokens:8192,
+    temperature:0.2,
+    messages:[{role:"user",content:prompt}]
    })
   });
  }catch(e){
-  if(e&&e.name==="AbortError")throw Error("انتهت مهلة الاتصال بـ Gemini بعد 90 ثانية. أعد المحاولة أو قلّل حجم الجزء.");
-  throw Error("Connexion à Gemini impossible. Vérifiez Internet et les paramètres d'accès API.");
+  if(e&&e.name==="AbortError")throw Error("انتهت مهلة الاتصال بـ Claude بعد 90 ثانية. أعد المحاولة أو قلّل حجم الجزء.");
+  throw Error("تعذر الاتصال بـ Claude. تحقق من الإنترنت، ومن إمكانية الوصول إلى Anthropic API، ومن إعدادات المتصفح.");
  }finally{clearTimeout(timeoutId);}
 
  const responseText=await response.text();
  let data;
  try{data=JSON.parse(responseText);}
- catch{throw Error("Réponse invalide reçue du serveur Gemini.");}
+ catch{throw Error("Réponse invalide reçue de l'API Claude.");}
 
  if(!response.ok){
   const msg=data.error?.message||"Erreur inconnue";
-  if(response.status===400)throw Error("Gemini API Error (400): "+msg);
-  if(response.status===401||response.status===403)throw Error("Clé API refusée ou accès non autorisé (HTTP "+response.status+"). Vérifiez la clé et les autorisations : "+msg);
-  if(response.status===404)throw Error("Modèle Gemini introuvable pour cette clé ou cette API (404). Consultez la liste des modèles disponibles dans Google AI Studio. Détail : "+msg);
-  if(response.status===429)throw Error("Limite de requêtes ou quota Gemini atteint (429). Réessayez plus tard. Détail : "+msg);
-  throw Error("Gemini API Error ("+response.status+"): "+msg);
+  if(response.status===400)throw Error("Claude API Error (400): "+msg);
+  if(response.status===401||response.status===403)throw Error("Clé API Anthropic refusée ou accès non autorisé (HTTP "+response.status+"). Vérifiez la clé dans Anthropic Console et les autorisations : "+msg);
+  if(response.status===404)throw Error("Modèle Claude introuvable ou indisponible pour cette clé (404). Vérifiez les modèles disponibles dans la documentation Anthropic. Détail : "+msg);
+  if(response.status===429)throw Error("Limite de requêtes ou quota Anthropic atteint (429). Réessayez plus tard. Détail : "+msg);
+  throw Error("Claude API Error ("+response.status+"): "+msg);
  }
 
- const candidate=data.candidates?.[0];
- if(candidate?.finishReason==="MAX_TOKENS")throw Error("Gemini a atteint la limite de sortie : ce segment n'a pas été accepté afin d'éviter une perte silencieuse de contenu. Réduisez la taille des segments et réessayez.");
- const generatedText=candidate?.content?.parts?.map(p=>p.text||"").join("").trim();
- if(!generatedText)throw Error("Gemini n'a retourné aucun contenu. Vérifiez les limites du modèle et réessayez.");
+ if(data.stop_reason==="max_tokens")throw Error("Claude a atteint la limite de sortie : ce segment n'a pas été accepté afin d'éviter une perte silencieuse de contenu. Réduisez la taille des segments et réessayez.");
+ const generatedText=(data.content||[]).filter(block=>block.type==="text").map(block=>block.text||"").join("").trim();
+ if(!generatedText)throw Error("Claude n'a retourné aucun contenu. Vérifiez les limites du modèle et réessayez.");
 
  let aiData;
  try{
   aiData=JSON.parse(generatedText.replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/\s*```$/,"").trim());
  }catch{
-  throw Error("Gemini a répondu, mais le JSON généré est invalide. Réessayez.");
+  throw Error("Claude a répondu, mais le JSON généré est invalide. Réessayez.");
  }
 
  if(!aiData||typeof aiData.title!=="string"||!Array.isArray(aiData.slides)||aiData.slides.length===0){
-  throw Error("La réponse de Gemini ne respecte pas le format de présentation attendu.");
+  throw Error("La réponse de Claude ne respecte pas le format de présentation attendu.");
  }
  return aiData;
 }
@@ -340,7 +342,7 @@ function normalizeSlidesForLayout(slides){
  for(const original of slides){
   const heading=String(original.heading||original.title||"Section");
   const rawPoints=toSlidePoints(original);
-  if(!rawPoints.length)throw Error("Une diapositive reçue de Gemini ne contient aucun texte vérifiable. Réessayez afin d'éviter une diapositive vide.");
+  if(!rawPoints.length)throw Error("Une diapositive reçue de Claude ne contient aucun texte vérifiable. Réessayez afin d'éviter une diapositive vide.");
   const points=rawPoints.flatMap(p=>splitLongPointExact(p,210));
   let page=[],chars=0;
   const flush=()=>{if(page.length){result.push({type:"standard",heading:result.some(x=>x._sourceHeading===heading)?heading+" (suite)":heading,points:page,_sourceHeading:heading});page=[];chars=0;}};
@@ -357,11 +359,11 @@ async function callAIAll(rawText,userTitle,isTopic=false){
  if(!chunks.length)throw Error("Le contenu est vide.");
  const allSlides=[];let title=userTitle||"Cours",subtitle="";
  for(let i=0;i<chunks.length;i++){
-  setStatus(chunks.length>1?`Analyse du contenu : partie ${i+1}/${chunks.length}...`:"Analyse par Google Gemini...","info");
+  setStatus(chunks.length>1?`Analyse du contenu : partie ${i+1}/${chunks.length}...`:"Analyse par Anthropic Claude...","info");
   setProgress(`Partie ${i+1}/${chunks.length} — texte source segmenté sans suppression de caractères.`);
   const data=await callAI(chunks[i],userTitle,isTopic,`Segment ${i+1} sur ${chunks.length}. Traite uniquement ce segment, dans son ordre d'origine. Toutes les informations distinctes de ce segment doivent apparaître dans les diapositives. Ne complète pas avec des informations extérieures.`);
   if(i===0){title=data.title||title;subtitle=data.subtitle||"";}
-  if(!Array.isArray(data.slides)||!data.slides.length)throw Error(`Gemini n'a pas généré de diapositives pour la partie ${i+1}/${chunks.length}. Le traitement est arrêté pour ne pas masquer une perte de contenu.`);
+  if(!Array.isArray(data.slides)||!data.slides.length)throw Error(`Claude n'a pas généré de diapositives pour la partie ${i+1}/${chunks.length}. Le traitement est arrêté pour ne pas masquer une perte de contenu.`);
   allSlides.push(...data.slides);
  }
  const slides=normalizeSlidesForLayout(allSlides);
