@@ -319,7 +319,7 @@ async function buildPresentationPro(aiData,d){
    const steps=s.steps.slice(0,7),stepH=4.8/steps.length;
    steps.forEach((st,i)=>{
     const y=1.6+i*stepH;
-    addShape(slide,pptx,pptx.ShapeType.oval,{x:.8,y:y+.1,w:.5,h:.5,fill:{color:ac},line:{color:ac}});
+    addShape(slide,pptx,pptx.ShapeType.ellipse,{x:.8,y:y+.1,w:.5,h:.5,fill:{color:ac},line:{color:ac}});
     addText(slide,String(i+1),{x:.8,y:y+.1,w:.5,h:.5,fontFace:d.body,fontSize:14,bold:true,color:"FFFFFF",align:"center"});
     addText(slide,st.step||"",{x:1.5,y,w:10.5,h:.3,fontFace:d.head,fontSize:16,bold:true,color:fg});
     addText(slide,st.desc||"",{x:1.5,y:y+.3,w:10.5,h:.4,fontFace:d.body,fontSize:14,color:fg,transparency:15});
