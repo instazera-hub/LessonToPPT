@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#172554">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>LessonToPPT Studio AI - Hybrid Pro</title>
+<title>LessonToPPT Studio Hybrid Pro — Content Safe</title>
 <link rel="manifest" href="data:application/manifest+json;utf8,{%22name%22:%22LessonToPPT%20Hybrid%22,%22short_name%22:%22LessonToPPT%22,%22start_url%22:%22./%22,%22display%22:%22standalone%22,%22background_color%22:%22#172554%22,%22theme_color%22:%22#172554%22}">
 <style>
 :root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#65718a;--line:#e1e7f0;--brand:#3949ab;--accent:#168c9a}
@@ -49,7 +49,7 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
    <input id="apiKey" type="password" placeholder="AIzaSy...">
    <button id="saveKey" style="width:140px;padding:0 12px;">Enregistrer</button>
   </div>
-  <p class="muted" style="margin-top:6px;">Obtenez une clé gratuite sur <a href="https://aistudio.google.com/" target="_blank" rel="noopener" style="color:#3949ab;">Google AI Studio</a>.</p>
+  <p class="muted" style="margin-top:6px;">Obtenez une clé sur <a href="https://aistudio.google.com/" target="_blank" rel="noopener" style="color:#3949ab;">Google AI Studio</a>. Attention : l'enregistrement la conserve dans le stockage local du navigateur. Ne partagez pas cette page avec votre clé et n'utilisez pas cette méthode pour un service public.</p>
  </div>
 </section>
 <section class="card">
@@ -194,36 +194,42 @@ async function extract(file,ext){
   const pdf=await window.pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
   const arr=[];
   for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i),c=await pg.getTextContent();arr.push(c.items.map(x=>x.str||"").join(" "));}
-  return arr.join("\n");
+  const extracted=arr.join("\n");
+  if(extracted.replace(/\s/g,"").length<30)throw Error("Très peu de texte a été extrait du PDF. Il est peut-être scanné : une étape OCR est nécessaire, mais elle n'est pas encore intégrée à cette version.");
+  return extracted;
  }
  if(ext!=="docx")throw Error("Format non pris en charge. Utilisez un fichier PDF ou DOCX.");
  const r=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
  return r.value;
 }
 
-async function callAI(rawText,userTitle,isTopic=false){
+async function callAI(rawText,userTitle,isTopic=false,segmentInfo="") {
  const apiKey=$("apiKey").value.trim()||localStorage.getItem("gemini_api_key");
  if(!apiKey)throw Error("Veuillez renseigner votre clé API Google Gemini.");
 
- const prompt=`Tu es un professeur universitaire et expert en design de présentations. Transforme le contenu suivant en un cours magistral professionnel, précis et structuré en français. Renvoie UNIQUEMENT un objet JSON valide, sans Markdown, avec cette structure :
+ const sourceLanguage=/[\u0600-\u06FF]/.test(rawText)?"arabe":(/[àâçéèêëîïôûùüÿœæ]/i.test(rawText)?"français":"langue d'origine du texte source");
+ const prompt=`Tu es un spécialiste de la création de diapositives pédagogiques professionnelles. Transforme le segment fourni en diapositives PowerPoint.
+LANGUE : conserve la langue d'origine du contenu (${sourceLanguage}). Ne traduis pas le texte et ne change pas la langue sans demande explicite.
+RÈGLE ABSOLUE : NE RÉSUME PAS, NE RACCOURCIS PAS, NE SUPPRIME PAS ET NE FUSIONNE PAS les informations distinctes. Préserve toutes les idées, précisions, définitions, explications, exemples, étapes, noms, dates, chiffres, unités, réserves, citations et relations de cause à effet du texte source. Reformule uniquement si cela ne change absolument rien au sens ni au niveau de détail. Si le texte est long, crée davantage de diapositives : ne limite jamais le nombre de diapositives pour faire tenir le contenu.
+Renvoie UNIQUEMENT un objet JSON valide, sans Markdown, avec cette structure :
 {
  "title":"Titre du cours",
- "subtitle":"Sous-titre",
+ "subtitle":"Sous-titre fidèle au contenu",
  "slides":[
-  {"type":"standard","heading":"Titre","points":["P1","P2","P3"]},
-  {"type":"comparison","heading":"Comparaison","leftTitle":"A","leftPoints":["x"],"rightTitle":"B","rightPoints":["y"]},
-  {"type":"process","heading":"Étapes","steps":[{"step":"1","desc":"..."}]},
-  {"type":"cards","heading":"Cartes","cards":[{"title":"...","text":"..."}]}
+  {"type":"standard","heading":"Titre précis","points":["Texte complet, fidèle et suffisamment détaillé"]}
  ]
 }
-Consignes :
-- Construis un cours pédagogique avec une progression logique.
-- Préserve les faits importants et évite les répétitions.
-- N'invente pas de données précises qui ne sont pas présentes dans le contenu.
-- Fais des diapositives lisibles, avec des points concis et informatifs.
-- Utilise les différents types de diapositives quand ils sont pertinents.
-- Vise 8 à 14 diapositives selon la longueur du contenu.
-Sujet ou contenu : ${rawText.slice(0,16000)}
+Règles de mise en page et de contenu :
+- Utilise uniquement le type standard avec un tableau points, pour éviter les pertes liées aux mises en page spécialisées.
+- Chaque diapositive contient 2 à 4 points lisibles. Si un point est trop long, répartis-le en plusieurs diapositives sans retirer d'information.
+- Recopie les informations, les termes techniques, les chiffres et les références du segment source. N'ajoute pas de faits extérieurs.
+- Le titre peut être amélioré, mais ne doit pas remplacer le contenu source.
+- Ne fais pas de résumé introductif ou de conclusion qui remplacerait le contenu source.
+- Ne crée pas de répétitions inutiles entre les diapositives, mais ne supprime jamais une information distincte même si elle ressemble à une autre.
+- N'invente aucune information. Garde les termes techniques et les valeurs numériques exacts.
+- ${segmentInfo}
+Sujet ou contenu source à préserver intégralement :
+${rawText}
 Titre demandé : ${userTitle||"Cours"}`;
 
  setStatus("Analyse par Google Gemini...","info");
@@ -232,22 +238,26 @@ Titre demandé : ${userTitle||"Cours"}`;
  // Modèle stable documenté par Google ; endpoint REST v1beta.
  const url="https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
  let response;
+ const controller=new AbortController();
+ const timeoutId=setTimeout(()=>controller.abort(),90000);
  try{
   response=await fetch(url,{
    method:"POST",
    headers:{"Content-Type":"application/json","x-goog-api-key":apiKey},
+   signal:controller.signal,
    body:JSON.stringify({
     contents:[{role:"user",parts:[{text:prompt}]}],
     generationConfig:{
      responseMimeType:"application/json",
-     temperature:0.4,
+     temperature:0.2,
      maxOutputTokens:8192
     }
    })
   });
  }catch(e){
+  if(e&&e.name==="AbortError")throw Error("انتهت مهلة الاتصال بـ Gemini بعد 90 ثانية. أعد المحاولة أو قلّل حجم الجزء.");
   throw Error("Connexion à Gemini impossible. Vérifiez Internet et les paramètres d'accès API.");
- }
+ }finally{clearTimeout(timeoutId);}
 
  const responseText=await response.text();
  let data;
@@ -263,8 +273,10 @@ Titre demandé : ${userTitle||"Cours"}`;
   throw Error("Gemini API Error ("+response.status+"): "+msg);
  }
 
- const generatedText=data.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("").trim();
- if(!generatedText)throw Error("Gemini n'a retourné aucun contenu. Essayez un sujet plus court ou vérifiez les limites du modèle.");
+ const candidate=data.candidates?.[0];
+ if(candidate?.finishReason==="MAX_TOKENS")throw Error("Gemini a atteint la limite de sortie : ce segment n'a pas été accepté afin d'éviter une perte silencieuse de contenu. Réduisez la taille des segments et réessayez.");
+ const generatedText=candidate?.content?.parts?.map(p=>p.text||"").join("").trim();
+ if(!generatedText)throw Error("Gemini n'a retourné aucun contenu. Vérifiez les limites du modèle et réessayez.");
 
  let aiData;
  try{
@@ -279,25 +291,104 @@ Titre demandé : ${userTitle||"Cours"}`;
  return aiData;
 }
 
+function splitTextWithoutDropping(text,maxChars=6000){
+ // Découpe par tranches contiguës : aucun caractère du texte source n'est supprimé.
+ const source=String(text||"");
+ if(!source.trim())return [];
+ const chunks=[];let start=0;
+ while(start<source.length){
+  let end=Math.min(start+maxChars,source.length);
+  if(end<source.length){
+   const floor=start+Math.floor(maxChars*.72);
+   const boundary=source.lastIndexOf(" ",end);
+   const newline=source.lastIndexOf("\n",end);
+   const cut=Math.max(boundary,newline);
+   if(cut>floor)end=cut+1;
+  }
+  if(end<=start)end=Math.min(start+maxChars,source.length);
+  chunks.push(source.slice(start,end));start=end;
+ }
+ // Vérification locale : l'assemblage doit être strictement identique à l'entrée.
+ if(chunks.join("")!==source)throw Error("Erreur interne : la segmentation a modifié le texte source.");
+ return chunks;
+}
+function toSlidePoints(s){
+ const out=[];
+ const add=(v)=>{if(v===undefined||v===null)return;if(typeof v==="string"){if(v.trim())out.push(v);}else if(typeof v==="number"||typeof v==="boolean")out.push(String(v));};
+ (Array.isArray(s.points)?s.points:[]).forEach(add);
+ if(s.type==="comparison"){
+  if(s.leftTitle)add(s.leftTitle);(s.leftPoints||[]).forEach(add);
+  if(s.rightTitle)add(s.rightTitle);(s.rightPoints||[]).forEach(add);
+ }
+ if(s.type==="cards")(s.cards||[]).forEach(c=>{if(c.title)add(c.title);add(c.text);});
+ if(s.type==="process")(s.steps||[]).forEach(st=>{add(st.step);add(st.desc);});
+ return out;
+}
+function splitLongPointExact(value,maxChars=210){
+ const text=String(value);if(text.length<=maxChars)return [text];
+ const parts=[];let start=0;
+ while(start<text.length){
+  let end=Math.min(start+maxChars,text.length);
+  if(end<text.length){const cut=text.lastIndexOf(" ",end);if(cut>start+Math.floor(maxChars*.65))end=cut+1;}
+  if(end<=start)end=Math.min(start+maxChars,text.length);
+  parts.push(text.slice(start,end));start=end;
+ }
+ return parts;
+}
+function normalizeSlidesForLayout(slides){
+ const result=[];
+ for(const original of slides){
+  const heading=String(original.heading||original.title||"Section");
+  const rawPoints=toSlidePoints(original);
+  if(!rawPoints.length)throw Error("Une diapositive reçue de Gemini ne contient aucun texte vérifiable. Réessayez afin d'éviter une diapositive vide.");
+  const points=rawPoints.flatMap(p=>splitLongPointExact(p,210));
+  let page=[],chars=0;
+  const flush=()=>{if(page.length){result.push({type:"standard",heading:result.some(x=>x._sourceHeading===heading)?heading+" (suite)":heading,points:page,_sourceHeading:heading});page=[];chars=0;}};
+  for(const point of points){
+   if(page.length>=4||chars+point.length>690)flush();
+   page.push(point);chars+=point.length;
+  }
+  flush();
+ }
+ return result.map(({_sourceHeading,...s})=>s);
+}
+async function callAIAll(rawText,userTitle,isTopic=false){
+ const chunks=splitTextWithoutDropping(rawText,6000);
+ if(!chunks.length)throw Error("Le contenu est vide.");
+ const allSlides=[];let title=userTitle||"Cours",subtitle="";
+ for(let i=0;i<chunks.length;i++){
+  setStatus(chunks.length>1?`Analyse du contenu : partie ${i+1}/${chunks.length}...`:"Analyse par Google Gemini...","info");
+  setProgress(`Partie ${i+1}/${chunks.length} — texte source segmenté sans suppression de caractères.`);
+  const data=await callAI(chunks[i],userTitle,isTopic,`Segment ${i+1} sur ${chunks.length}. Traite uniquement ce segment, dans son ordre d'origine. Toutes les informations distinctes de ce segment doivent apparaître dans les diapositives. Ne complète pas avec des informations extérieures.`);
+  if(i===0){title=data.title||title;subtitle=data.subtitle||"";}
+  if(!Array.isArray(data.slides)||!data.slides.length)throw Error(`Gemini n'a pas généré de diapositives pour la partie ${i+1}/${chunks.length}. Le traitement est arrêté pour ne pas masquer une perte de contenu.`);
+  allSlides.push(...data.slides);
+ }
+ const slides=normalizeSlidesForLayout(allSlides);
+ if(!slides.length)throw Error("Aucune diapositive n'a été produite.");
+ return {title,subtitle,slides,sourceAudit:{sourceCharacters:String(rawText).length,segments:chunks.length,generatedSlides:slides.length}};
+}
+
 function cleanName(s){return (s||"Cours").replace(/\.(pdf|docx)$/i,"").replace(/[\\/:*?"<>|]/g,"").trim().slice(0,80)||"Cours"}
 function addShape(slide,pptx,type,opts){slide.addShape(type,opts)}
-function addText(slide,text,opts){slide.addText(text,{margin:0.06,breakLine:false,fit:"shrink",...opts})}
+function addText(slide,text,opts){slide.addText(text,{margin:0.06,breakLine:false,...opts})}
 
 async function buildPresentationPro(aiData,d){
  const C=pptxCtor();
+ if(typeof C!=="function")throw Error("La bibliothèque PptxGenJS n'est pas disponible ou n'a pas été chargée correctement.");
  const pptx=new C();pptx.layout="LAYOUT_WIDE";pptx.title=aiData.title||"Cours";
  const bg=d.bg,fg=d.fg,ac=d.accent,soft=d.soft;
  const cover=pptx.addSlide();cover.background={color:bg};
  addShape(cover,pptx,pptx.ShapeType.rect,{x:0,y:0,w:.2,h:7.5,line:{color:ac,transparency:100},fill:{color:ac}});
  addText(cover,"SUPPORT DE COURS HYBRIDE",{x:.8,y:.8,w:10.8,h:.35,fontFace:d.body,fontSize:10,bold:true,charSpacing:2,color:ac});
- addText(cover,aiData.title||"Présentation",{x:.78,y:1.55,w:10.9,h:2.0,fontFace:d.head,fontSize:40,bold:true,color:fg,valign:"mid"});
+ addText(cover,aiData.title||"Présentation",{x:.78,y:1.55,w:10.9,h:2.0,fontFace:d.head,fontSize:40,bold:true,color:fg,valign:"mid",fit:"shrink"});
  if(aiData.subtitle)addText(cover,aiData.subtitle,{x:.8,y:3.8,w:10.5,h:.5,fontFace:d.body,fontSize:16,color:fg,transparency:20});
  addShape(cover,pptx,pptx.ShapeType.line,{x:.82,y:4.6,w:2.5,h:0,line:{color:ac,width:3}});
 
  (aiData.slides||[]).forEach((s,idx)=>{
   const slide=pptx.addSlide();slide.background={color:bg};
   addShape(slide,pptx,pptx.ShapeType.rect,{x:.55,y:.48,w:.08,h:.55,line:{color:ac,transparency:100},fill:{color:ac}});
-  addText(slide,s.heading||"Section",{x:.78,y:.45,w:11.5,h:.6,fontFace:d.head,fontSize:26,bold:true,color:fg});
+  addText(slide,s.heading||"Section",{x:.78,y:.45,w:11.5,h:.6,fontFace:d.head,fontSize:28,bold:true,color:fg,fit:"shrink"});
   addShape(slide,pptx,pptx.ShapeType.line,{x:.8,y:1.2,w:11.4,h:0,line:{color:soft,width:1.5}});
 
   if(s.type==="comparison"){
@@ -325,8 +416,9 @@ async function buildPresentationPro(aiData,d){
     addText(slide,st.desc||"",{x:1.5,y:y+.3,w:10.5,h:.4,fontFace:d.body,fontSize:14,color:fg,transparency:15});
    });
   }else{
-   const bullets=(s.points||[]).map(t=>({text:String(t),options:{bullet:{indent:18},hanging:4,breakLine:true}}));
-   slide.addText(bullets.length?bullets:[{text:"Contenu à compléter",options:{breakLine:true}}],{x:.95,y:1.6,w:11.1,h:5.0,fontFace:d.body,fontSize:18,color:fg,paraSpaceAfterPt:14,lineSpacingMultiple:1.1});
+   const bullets=(s.points||[]).map((t,i)=>({text:String(t),options:{bullet:{indent:18},hanging:4,breakLine:i<((s.points||[]).length-1)}}));
+   if(!bullets.length)throw Error("Une diapositive vide a été détectée avant la génération du fichier.");
+   slide.addText(bullets,{x:.95,y:1.48,w:11.1,h:5.28,fontFace:d.body,fontSize:22,color:fg,paraSpaceAfterPt:12,breakLine:false,margin:0.06,valign:"top"});
   }
   addText(slide,String(idx+2).padStart(2,"0"),{x:12.0,y:6.9,w:.5,h:.25,fontFace:d.body,fontSize:9,color:ac,align:"right"});
  });
@@ -356,15 +448,16 @@ async function generate(){
    userTitle=$("titleFile").value.trim()||cleanName(file.name);
   }
   if(!rawText.trim())throw Error("Le contenu est vide.");
-  const aiData=await callAI(rawText,userTitle,isTopicMode);
+  if(mode()==="smart")currentDesign=chooseSmart(rawText);
+  const aiData=await callAIAll(rawText,userTitle,isTopicMode);
   setStatus("Création du PowerPoint en cours...","info");
-  setProgress("Construction des diapositives...");
+  setProgress("Construction de toutes les diapositives...");
   await ensureLib("pptx");
   const {pptx,count}=await buildPresentationPro(aiData,currentDesign);
   const fileName=cleanName(userTitle||aiData.title)+".pptx";
   await pptx.writeFile({fileName});
-  setStatus(`Succès ! Présentation générée (${count} diapositives).`,"success");
-  setProgress("Le fichier .pptx a été téléchargé. Vérifiez le dossier Téléchargements.");
+  setStatus(`Succès ! Présentation générée (${count} diapositives, dont la couverture).`,"success");
+  setProgress(`Vérification de segmentation : ${aiData.sourceAudit.segments} partie(s) traitée(s), ${aiData.sourceAudit.sourceCharacters.toLocaleString()} caractères source, ${aiData.sourceAudit.generatedSlides} diapositives de contenu. La segmentation conserve les caractères, mais la fidélité sémantique doit toujours être vérifiée en comparant le PPTX au document original. Le fichier a été téléchargé.`);
  }catch(err){
   console.error(err);
   setStatus("Erreur : "+(err?.message||String(err)),"error");
