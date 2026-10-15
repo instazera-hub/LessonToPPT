@@ -4,19 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#172554">
-<title>LessonToPPT Studio</title>
+<title>LessonToPPT Studio AI</title>
 <style>
-:root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#65718a;--line:#e1e7f0;--brand:#3949ab}
+:root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#65718a;--line:#e1e7f0;--brand:#3949ab;--accent:#168c9a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 header{background:#172554;color:white;padding:28px 20px 30px}header .kicker{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:#c7d2fe;font-weight:800}header h1{font-size:32px;line-height:1.15;margin:9px 0}header p{margin:0;color:#dbeafe;max-width:650px}
 main{max-width:900px;margin:22px auto;padding:0 14px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;margin-bottom:17px;box-shadow:0 8px 28px #17255408}
 h2{font-size:21px;margin:0 0 14px;line-height:1.3}.sub{color:var(--muted);font-size:14px;margin:-5px 0 18px}
-label{display:block;font-weight:750;margin-bottom:7px}input[type=file],input[type=text],select{width:100%;min-height:48px;padding:12px;border:1px solid #d6deeb;border-radius:12px;background:#fff;color:#172033;font:inherit}
+label{display:block;font-weight:750;margin-bottom:7px}input[type=file],input[type=text],input[type=password],select,textarea{width:100%;min-height:48px;padding:12px;border:1px solid #d6deeb;border-radius:12px;background:#fff;color:#172033;font:inherit}
+textarea{min-height:110px;resize:vertical}
 .field{margin-bottom:16px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .choice{border:1px solid var(--line);border-radius:13px;padding:13px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
 .choice input{margin-top:5px;accent-color:#3949ab}.choice b{display:block}.choice small{display:block;color:var(--muted);line-height:1.4;margin-top:3px}
 button{width:100%;border:0;border-radius:13px;padding:16px;background:#3949ab;color:white;font:inherit;font-weight:800;cursor:pointer}
 button:disabled{opacity:.55;cursor:wait}.secondary{margin-top:10px;background:#e9edff;color:#293b99}
+.tabs{display:flex;gap:10px;margin-bottom:18px}.tab-btn{flex:1;padding:12px;border-radius:10px;background:#eef2ff;color:#3949ab;border:1px solid #d9e2ec;font-weight:750;cursor:pointer}
+.tab-btn.active{background:#3949ab;color:#fff;border-color:#3949ab}
 .preview{min-height:245px;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr}
 .preview-main{padding:25px;display:flex;flex-direction:column;justify-content:center}.preview-side{padding:22px;display:flex;align-items:flex-end;justify-content:flex-end;background:linear-gradient(145deg,#ffffff12,#00000018)}
 .preview .eyebrow{font-size:11px;font-weight:850;letter-spacing:2px;text-transform:uppercase;opacity:.8}.preview h3{font-size:31px;line-height:1.12;margin:15px 0}.preview p{font-size:15px;margin:0;opacity:.9}.preview .decor{width:75px;height:75px;border:2px solid currentColor;opacity:.55;border-radius:22px;transform:rotate(12deg)}
@@ -29,24 +32,50 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 </head>
 <body>
 <header>
- <div class="kicker">Présentation assistée par design</div>
- <h1>LessonToPPT Studio</h1>
- <p>Transformez vos cours en présentations structurées, cohérentes et prêtes à être retravaillées dans PowerPoint.</p>
+ <div class="kicker">Studio IA & Présentation</div>
+ <h1>LessonToPPT Studio AI</h1>
+ <p>Transformez vos cours ou sujets bruts en présentations PowerPoint professionnelles structurées par l'Intelligence Artificielle.</p>
 </header>
 <main>
+<!-- Configuration Gemini AI -->
 <section class="card">
- <h2>01 · Importer le cours</h2>
- <p class="sub">Le contenu est extrait du document, puis organisé en diapositives.</p>
- <div class="field"><label for="source">Fichier source</label><input id="source" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"><p class="muted">PDF contenant du texte ou document Word .docx. Les PDF scannés nécessitent une fonction OCR.</p></div>
- <div class="field"><label for="title">Titre de la présentation</label><input id="title" type="text" placeholder="Ex. : Athérosclérose"></div>
+ <h2>01 · Configuration Gemini AI</h2>
+ <p class="sub">Entrez votre clé API Google Gemini pour activer l'intelligence artificielle (la clé est stockée uniquement dans votre navigateur).</p>
+ <div class="field">
+  <label for="apiKey">Clé API Google Gemini</label>
+  <div style="display:flex; gap:10px;">
+   <input id="apiKey" type="password" placeholder="AIzaSy...">
+   <button id="saveKey" style="width:140px; padding:0 12px;">Enregistrer</button>
+  </div>
+  <p class="muted" style="margin-top:6px;">Obtenez gratuitement une clé sur <a href="https://aistudio.google.com/" target="_blank" style="color:#3949ab;">Google AI Studio</a>.</p>
+ </div>
 </section>
 
+<!-- Source ou Sujet IA -->
 <section class="card">
- <h2>02 · Direction artistique</h2>
- <p class="sub">Choisissez une direction ou laissez LessonToPPT sélectionner un design selon le sujet du cours.</p>
- <label class="choice"><input type="radio" name="designMode" value="smart" checked><span><b>Automatique — recommandé</b><small>Analyse les mots du cours pour choisir palette, typographie et composition adaptées au sujet.</small></span></label>
+ <h2>02 · Source du cours</h2>
+ <p class="sub">Choisissez d'importer un document ou de laisser l'IA rédiger le cours complet à partir d'un simple sujet ou de notes.</p>
+ <div class="tabs">
+  <button type="button" class="tab-btn active" data-tab="tabFile">📁 Importer un fichier (PDF/Word)</button>
+  <button type="button" class="tab-btn" data-tab="tabTopic">✨ Générer à partir d'un sujet / notes</button>
+ </div>
+ <div id="tabFileContent">
+  <div class="field"><label for="source">Fichier source</label><input id="source" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"><p class="muted">PDF contenant du texte ou document Word .docx.</p></div>
+  <div class="field"><label for="titleFile">Titre de la présentation</label><input id="titleFile" type="text" placeholder="Ex. : Athérosclérose (laisser vide pour nommer d'après le fichier)"></div>
+ </div>
+ <div id="tabTopicContent" class="hidden">
+  <div class="field"><label for="topicInput">Sujet du cours ou notes brutes</label><textarea id="topicInput" placeholder="Ex. : Les bases de l'intelligence artificielle générative, son fonctionnement, ses applications cliniques et ses limites éthiques."></textarea></div>
+  <div class="field"><label for="titleTopic">Titre de la présentation</label><input id="titleTopic" type="text" placeholder="Ex. : Introduction à l'IA Générative"></div>
+ </div>
+</section>
+
+<!-- Direction artistique -->
+<section class="card">
+ <h2>03 · Direction artistique</h2>
+ <p class="sub">Choisissez une direction ou laissez LessonToPPT sélectionner un design selon le sujet.</p>
+ <label class="choice"><input type="radio" name="designMode" value="smart" checked><span><b>Automatique — recommandé</b><small>Analyse le contenu du cours pour choisir palette, typographie et composition adaptées.</small></span></label>
  <label class="choice"><input type="radio" name="designMode" value="random"><span><b>Surprise — design aléatoire</b><small>Choisit une direction artistique complète différente à chaque génération.</small></span></label>
- <label class="choice"><input type="radio" name="designMode" value="manual"><span><b>Personnaliser</b><small>Choisissez vous-même une direction artistique et les tailles de texte.</small></span></label>
+ <label class="choice"><input type="radio" name="designMode" value="manual"><span><b>Personnaliser</b><small>Choisissez vous-même une direction artistique.</small></span></label>
  <div id="manualOptions" class="hidden">
   <div class="grid">
    <div class="field"><label for="style">Direction artistique</label><select id="style">
@@ -55,8 +84,6 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
    <div class="field"><label for="fontPair">Association typographique</label><select id="fontPair">
     <option value="modern">Moderne — Aptos / Aptos</option><option value="editorial">Éditorial — Georgia / Arial</option><option value="classic">Classique — Cambria / Calibri</option><option value="clean">Clair — Arial / Arial</option><option value="humanist">Humaniste — Trebuchet MS / Verdana</option><option value="formal">Formel — Georgia / Georgia</option><option value="tech">Technique — Arial / Aptos</option>
    </select></div>
-   <div class="field"><label for="titleSize">Taille des titres</label><select id="titleSize"><option value="30">30 pt</option><option value="34">34 pt</option><option value="38" selected>38 pt</option><option value="42">42 pt</option><option value="46">46 pt</option></select></div>
-   <div class="field"><label for="bodySize">Taille du texte</label><select id="bodySize"><option value="18">18 pt</option><option value="20">20 pt</option><option value="22" selected>22 pt</option><option value="24">24 pt</option><option value="26">26 pt</option></select></div>
   </div>
  </div>
  <div class="field"><label>Aperçu de la direction artistique</label>
@@ -68,18 +95,47 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
  </div>
 </section>
 
+<!-- Génération -->
 <section class="card">
- <h2>03 · Générer le PowerPoint</h2>
- <p class="sub">Le fichier généré est un véritable .pptx modifiable. Une connexion Internet est requise pour charger les bibliothèques.</p>
- <button id="generate">Créer la présentation .pptx</button>
+ <h2>04 · Générer le PowerPoint</h2>
+ <p class="sub">L'IA structure le cours en diapositives percutantes, exportées directement en fichier `.pptx` modifiable.</p>
+ <button id="generate">Créer la présentation .pptx avec l'IA</button>
  <div id="status" class="status" role="status" aria-live="polite"></div><div id="progress" class="progress"></div>
 </section>
 </main>
-<footer>LessonToPPT Studio · Prototype expérimental</footer>
+<footer>LessonToPPT Studio AI · Propulsé par Google Gemini</footer>
 
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
+
+// Gestion de la clé API
+window.addEventListener("DOMContentLoaded",()=>{
+ const saved=localStorage.getItem("gemini_api_key");
+ if(saved) $("apiKey").value=saved;
+});
+$("saveKey").addEventListener("click",()=>{
+ const key=$("apiKey").value.trim();
+ if(key){localStorage.setItem("gemini_api_key",key);alert("Clé API enregistrée avec succès !");}
+ else{localStorage.removeItem("gemini_api_key");alert("Clé API supprimée.");}
+});
+
+// Gestion des onglets source
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  const tab=btn.getAttribute("data-tab");
+  if(tab==="tabFile"){
+   $("tabFileContent").classList.remove("hidden");
+   $("tabTopicContent").classList.add("hidden");
+  }else{
+   $("tabFileContent").classList.add("hidden");
+   $("tabTopicContent").classList.remove("hidden");
+  }
+ });
+});
+
 const designs={
  editorial:{label:"ÉDITORIAL · CONTEMPORAIN",palette:"Crème, encre et terre cuite",bg:"F7F3ED",fg:"252525",accent:"C45D3A",soft:"E9DFD2",head:"Georgia",body:"Arial",style:"editorial"},
  clinical:{label:"SCIENCE · CLINIQUE",palette:"Blanc, bleu médical et turquoise",bg:"F4F8FB",fg:"17324D",accent:"168C9A",soft:"D9EDF0",head:"Aptos Display",body:"Aptos",style:"clinical"},
@@ -101,7 +157,7 @@ const fontPairs={
 let currentDesign=designs.clinical;
 function mode(){return document.querySelector('input[name="designMode"]:checked').value}
 function chooseSmart(text){
- const t=(text+" "+$("title").value).toLowerCase();
+ const t=(text).toLowerCase();
  const rules=[
   {keys:["patient","maladie","clinique","médecine","medecine","anatom","physiolog","athérosclérose","diagnostic","traitement","cardio","pathologie","biologie","santé","sante","cellule","hôpital","hopital"],id:"clinical"},
   {keys:["plante","écologie","ecologie","environnement","climat","biodiversité","biodiversite","forêt","foret","agriculture","nature"],id:"nature"},
@@ -151,7 +207,7 @@ async function ensureLib(kind){
  };
  let last;
  for(const u of urls[kind]){try{await loadScript(u);if(ready())return;last=Error("Le script est chargé mais l'API attendue est absente")}catch(e){last=e}}
- throw Error("Impossible de charger "+kind+". Vérifiez votre connexion Internet puis rechargez la page. "+(last?.message||""));
+ throw Error("Impossible de charger "+kind+". Vérifiez votre connexion Internet. "+(last?.message||""));
 }
 function pptxCtor(){
  return typeof window.pptxgen==="function"?window.pptxgen:
@@ -165,99 +221,171 @@ async function extract(file,ext){
   try { pdf=await window.pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise; }
   catch(firstError) {
    try { pdf=await window.pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer()),disableWorker:true}).promise; }
-   catch(secondError) { throw Error("Impossible de lire ce PDF. Essayez un PDF contenant du texte, puis réessayez. Détail : "+(secondError.message||firstError.message)); }
+   catch(secondError) { throw Error("Impossible de lire ce PDF. Détail : "+(secondError.message||firstError.message)); }
   }
   const arr=[];
   for(let i=1;i<=pdf.numPages;i++){setProgress("Analyse du PDF : page "+i+" / "+pdf.numPages);const pg=await pdf.getPage(i),c=await pg.getTextContent();const s=c.items.map(x=>x.str||"").join(" ").replace(/\s+/g," ").trim();if(s)arr.push(s)}
-  return arr;
+  return arr.join("\n");
  }
  const r=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
- return r.value.split(/\n+/).map(x=>x.replace(/\s+/g," ").trim()).filter(Boolean);
+ return r.value;
 }
-function chunkText(paragraphs,max=560){
- const out=[];let buf=[];
- for(const paragraph of paragraphs){
-  const sentences=paragraph.match(/[^.!?;:]+[.!?;:]?/g)||[paragraph];
-  for(let s of sentences){s=s.trim();if(!s)continue;
-   if(s.length>max){for(let i=0;i<s.length;i+=max){if(buf.length){out.push(buf);buf=[]}out.push([s.slice(i,i+max).trim()])};continue}
-   if(buf.join(" ").length+s.length>max){out.push(buf);buf=[]}buf.push(s);
-  }
+
+// Appel à Gemini AI pour structurer le cours en diapositives professionnelles
+async function callGeminiAI(rawText, userTitle, isTopic=false){
+ const apiKey = $("apiKey").value.trim() || localStorage.getItem("gemini_api_key");
+ if(!apiKey) throw Error("Veuillez renseigner votre clé API Google Gemini dans la section 01.");
+ 
+ setStatus("Analyse et structuration par l'Intelligence Artificielle…","info");
+ setProgress("Gemini prépare les diapositives du cours…");
+
+ const prompt = isTopic ? 
+  `Agis en tant qu'expert en pédagogie et en conception de présentations professionnelles. À partir du sujet ou des notes suivantes, crée une présentation PowerPoint complète, structurée, claire et percutante en français.\n\nSujet/Notes : ${rawText}\n\nTitre suggéré : ${userTitle || 'Cours'}\n\nRenvoie UNIQUEMENT un objet JSON valide (sans aucun autre texte markdown superflu) avec la structure exacte suivante :\n{\n  "title": "Titre principal de la présentation",\n  "slides": [\n    {\n      "heading": "Titre de la diapositive",\n      "points": ["Point clé 1", "Point clé 2", "Point clé 3", "Point clé 4"]\n    }\n  ]\n}\nAssure-toi d'avoir entre 6 et 12 diapositives de haute qualité.` :
+  `Agis en tant qu'expert en pédagogie et en conception de présentations professionnelles. À partir du texte brut du cours extrait ci-dessous, synthétise et structure ce contenu en une présentation PowerPoint professionnelle, claire et percutante en français.\n\nTexte du cours :\n${rawText.slice(0, 15000)}\n\nTitre suggéré : ${userTitle || 'Cours'}\n\nRenvoie UNIQUEMENT un objet JSON valide (sans aucun autre texte markdown superflu) avec la structure exacte suivante :\n{\n  "title": "Titre principal de la présentation",\n  "slides": [\n    {\n      "heading": "Titre de la diapositive",\n      "points": ["Point clé 1", "Point clé 2", "Point clé 3", "Point clé 4"]\n    }\n  ]\n}\nAssure-toi d'avoir entre 6 et 12 diapositives de haute qualité basées strictement sur le texte fourni.`;
+
+ const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+ const response = await fetch(url, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+   contents: [{ parts: [{ text: prompt }] }],
+   generationConfig: { temperature: 0.3, responseMimeType: "application/json" }
+  })
+ });
+
+ if(!response.ok) {
+  const errData = await response.json().catch(()=>({}));
+  throw Error("Erreur API Gemini ("+response.status+") : "+(errData.error?.message || response.statusText));
  }
- if(buf.length)out.push(buf);return out;
+
+ const data = await response.json();
+ const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+ if(!textResponse) throw Error("Réponse vide reçue de l'IA.");
+
+ try {
+  // Nettoyage éventuel du bloc markdown json
+  let cleanJson = textResponse.trim();
+  if(cleanJson.startsWith("
+```json")) cleanJson = cleanJson.replace(/^```json/, "").replace(/```$/, "").trim();
+  else if(cleanJson.startsWith("
+```")) cleanJson = cleanJson.replace(/^```/, "").replace(/```$/, "").trim();
+  return JSON.parse(cleanJson);
+ } catch(parseErr) {
+  throw Error("Erreur de décodage du JSON renvoyé par l'IA : " + parseErr.message);
+ }
 }
-function shorten(s,n=65){s=s.trim();return s.length>n?s.slice(0,n).replace(/\s+\S*$/,"")+"…":s}
-function slideHeading(items,index){
- const first=items[0]||"Points essentiels";
- const before=first.split(/[.!?:;]/)[0].trim();
- return before.length>=5&&before.length<=62?before.charAt(0).toLocaleUpperCase("fr")+before.slice(1):"Points essentiels · "+String(index).padStart(2,"0");
-}
+
 function cleanName(s){return (s||"Cours").replace(/\.(pdf|docx)$/i,"").replace(/[\\/:*?"<>|]/g,"").trim().slice(0,80)||"Cours"}
 function addShape(slide,pptx,type,opts){slide.addShape(type,opts)}
 function addText(slide,text,opts){slide.addText(text,{margin:0.06,breakLine:false,fit:"shrink",...opts})}
 function addPageNumber(slide,pptx,num,d){
  addText(slide,String(num).padStart(2,"0"),{x:12.0,y:6.92,w:.55,h:.25,fontFace:d.body,fontSize:9,color:d.accent,align:"right",margin:0});
 }
-async function buildPresentation(paras,title,d){
+
+async function buildPresentation(aiData,d){
  const C=pptxCtor();if(!C)throw Error("La bibliothèque PowerPoint n'est pas disponible.");
- const pptx=new C();pptx.layout="LAYOUT_WIDE";pptx.author="LessonToPPT Studio";pptx.subject="Présentation créée à partir d'un cours";pptx.title=title;pptx.lang="fr-FR";pptx.theme={headFontFace:d.head,bodyFontFace:d.body,lang:"fr-FR"};
- const dark=["technology","dark"].includes(d.style), bg=d.bg,fg=d.fg,ac=d.accent,soft=d.soft;
- // Cover: restrained editorial layout with strong typographic hierarchy.
+ const pptx=new C();pptx.layout="LAYOUT_WIDE";pptx.author="LessonToPPT Studio AI";pptx.subject="Présentation créée par IA";pptx.title=aiData.title || "Cours";pptx.lang="fr-FR";pptx.theme={headFontFace:d.head,bodyFontFace:d.body,lang:"fr-FR"};
+ 
+ const bg=d.bg,fg=d.fg,ac=d.accent,soft=d.soft;
+ 
+ // Cover
  const cover=pptx.addSlide();cover.background={color:bg};
  addShape(cover,pptx,pptx.ShapeType.rect,{x:0,y:0,w:.18,h:7.5,line:{color:ac,transparency:100},fill:{color:ac}});
- addText(cover,"SUPPORT DE COURS  /  "+d.label.split(" · ")[0],{x:.8,y:.8,w:10.8,h:.35,fontFace:d.body,fontSize:10,bold:true,charSpacing:2,color:ac});
- addText(cover,title,{x:.78,y:1.55,w:10.9,h:2.0,fontFace:d.head,fontSize:44,bold:true,color:fg,breakLine:false,valign:"mid",margin:0.02});
+ addText(cover,"COURS STRUCTURÉ PAR IA  /  "+d.label.split(" · ")[0],{x:.8,y:.8,w:10.8,h:.35,fontFace:d.body,fontSize:10,bold:true,charSpacing:2,color:ac});
+ addText(cover,aiData.title||"Présentation",{x:.78,y:1.55,w:10.9,h:2.0,fontFace:d.head,fontSize:42,bold:true,color:fg,breakLine:false,valign:"mid",margin:0.02});
  addShape(cover,pptx,pptx.ShapeType.line,{x:.82,y:4.0,w:2.0,h:0,line:{color:ac,width:3}});
- addText(cover,"Présentation structurée à partir du document source",{x:.82,y:4.25,w:9.8,h:.55,fontFace:d.body,fontSize:17,color:fg,transparency:8});
- addText(cover,"LESSONTO PPT  •  "+new Date().getFullYear(),{x:.82,y:6.78,w:8,h:.25,fontFace:d.body,fontSize:9,bold:true,charSpacing:1,color:ac});
- const chunks=chunkText(paras,560);
- if(!chunks.length)throw Error("Aucun texte détecté. Le document est peut-être un PDF scanné.");
- chunks.forEach((items,i)=>{
+ addText(cover,"Généré automatiquement par LessonToPPT Studio & Google Gemini",{x:.82,y:4.25,w:9.8,h:.55,fontFace:d.body,fontSize:17,color:fg,transparency:8});
+ addText(cover,"LESSONTO PPT AI  •  "+new Date().getFullYear(),{x:.82,y:6.78,w:8,h:.25,fontFace:d.body,fontSize:9,bold:true,charSpacing:1,color:ac});
+
+ aiData.slides.forEach((slideItem,i)=>{
   const slide=pptx.addSlide();slide.background={color:bg};
-  // Slim section accent and repeated running label.
   addShape(slide,pptx,pptx.ShapeType.rect,{x:.55,y:.48,w:.08,h:.55,line:{color:ac,transparency:100},fill:{color:ac}});
-  addText(slide,"COURS  /  "+d.label.split(" · ")[0],{x:.8,y:.45,w:10.6,h:.22,fontFace:d.body,fontSize:8,bold:true,charSpacing:1.7,color:ac});
-  const heading=slideHeading(items,i+1);
-  addText(slide,heading,{x:.78,y:.91,w:11.5,h:.9,fontFace:d.head,fontSize:29,bold:true,color:fg,valign:"mid",margin:0.03});
+  addText(slide,"MODULE  /  "+d.label.split(" · ")[0],{x:.8,y:.45,w:10.6,h:.22,fontFace:d.body,fontSize:8,bold:true,charSpacing:1.7,color:ac});
+  
+  const heading=slideItem.heading || ("Points clés · " + String(i+1).padStart(2,"0"));
+  addText(slide,heading,{x:.78,y:.91,w:11.5,h:.9,fontFace:d.head,fontSize:28,bold:true,color:fg,valign:"mid",margin:0.03});
   addShape(slide,pptx,pptx.ShapeType.line,{x:.8,y:1.88,w:11.4,h:0,line:{color:soft,width:1.5}});
-  const bullets=items.map(t=>({text:t,options:{bullet:{indent:18},hanging:4,breakLine:true}}));
+  
+  const points=slideItem.points || [];
+  const bullets=points.map(t=>({text:t,options:{bullet:{indent:18},hanging:4,breakLine:true}}));
   slide.addText(bullets,{x:.95,y:2.18,w:11.1,h:4.15,fontFace:d.body,fontSize:20,color:fg,breakLine:false,valign:"top",paraSpaceAfterPt:15,margin:.08,fit:"shrink",lineSpacingMultiple:1.08});
   addPageNumber(slide,pptx,i+2,d);
  });
- return {pptx,count:chunks.length+1};
+ return {pptx,count:aiData.slides.length+1};
 }
+
 async function generate(){
- const file=$("source").files[0];if(!file){setStatus("Veuillez choisir un fichier PDF ou Word.","error");return}
- const ext=file.name.split(".").pop().toLowerCase();if(!["pdf","docx"].includes(ext)){setStatus("Format non pris en charge. Choisissez un PDF ou DOCX.","error");return}
- const btn=$("generate");btn.disabled=true;setStatus("Préparation du design…");setProgress("");
+ const btn=$("generate");
+ const isTopicMode = !$("tabTopicContent").classList.contains("hidden");
+ 
+ let rawText="", userTitle="";
+ 
  try{
-  if(!navigator.onLine)throw Error("Connexion Internet nécessaire pour charger les bibliothèques.");
-  await ensureLib(ext==="pdf"?"pdf":"word");await ensureLib("pptx");
-  const paras=await extract(file,ext);if(!paras.length)throw Error("Aucun texte détecté. Un PDF scanné nécessite une fonction OCR.");
-  const title=$("title").value.trim()||cleanName(file.name);
+  if(!navigator.onLine)throw Error("Connexion Internet nécessaire.");
+  await ensureLib("pptx");
+
+  if(isTopicMode){
+   rawText=$("topicInput").value.trim();
+   userTitle=$("titleTopic").value.trim();
+   if(!rawText) { setStatus("Veuillez saisir un sujet ou des notes pour le cours.","error"); return; }
+  } else {
+   const file=$("source").files[0];
+   if(!file){setStatus("Veuillez choisir un fichier PDF ou Word.","error");return}
+   const ext=file.name.split(".").pop().toLowerCase();
+   if(!["pdf","docx"].includes(ext)){setStatus("Format non pris en charge. Choisissez un PDF ou DOCX.","error");return}
+   
+   if(ext==="pdf") await ensureLib("pdf");
+   else await ensureLib("word");
+
+   setStatus("Extraction du contenu du document…","info");
+   rawText = await extract(file,ext);
+   userTitle=$("titleFile").value.trim() || cleanName(file.name);
+   if(!rawText || rawText.length < 10) throw Error("Le document semble vide ou illisible.");
+  }
+
+  btn.disabled=true;
+  
+  // Appel IA Gemini
+  const aiData = await callGeminiAI(rawText, userTitle, isTopicMode);
+  if(!aiData || !aiData.slides || !aiData.slides.length) throw Error("L'IA n'a pas pu structurer le cours correctement.");
+
+  // Choix du design
   const m=mode();let d;
   if(m==="random")d=randomDesign();
   else if(m==="manual"){d={...designs[$("style").value]};Object.assign(d,fontPairs[$("fontPair").value]);}
-  else d=chooseSmart(paras.join(" ").slice(0,12000)+" "+title);
-  currentDesign=d;renderPreview();setProgress("Design choisi : "+d.label+" · "+d.palette);
-  setStatus("Création de la présentation…","info");
-  const result=await buildPresentation(paras,title,d);
-  setProgress("Préparation du fichier PowerPoint…");
-  const filename=cleanName(title)+".pptx";
-  if(!result.pptx || typeof result.pptx.writeFile!=="function") throw Error("La bibliothèque PowerPoint a été chargée, mais sa fonction d'export est introuvable. Rechargez la page avec Internet.");
+  else d=chooseSmart(rawText.slice(0,2000)+" "+aiData.title);
+  currentDesign=d;renderPreview();
+  
+  setProgress("Design appliqué : "+d.label+" · "+d.palette);
+  setStatus("Génération de la présentation PowerPoint…","info");
+
+  const result=await buildPresentation(aiData, d);
+  setProgress("Préparation du téléchargement…");
+  const filename=cleanName(aiData.title || userTitle)+".pptx";
+
   try {
    await result.pptx.writeFile({fileName:filename});
-  } catch(writeError) {
-   // Older browser builds accept a filename string instead of an options object.
-   try { await result.pptx.writeFile(filename); }
-   catch(secondWriteError) { throw Error("La présentation a été préparée, mais le téléchargement a échoué. Essayez d'ouvrir le fichier dans Chrome et vérifiez l'espace de stockage. Détail : "+(secondWriteError.message||writeError.message)); }
+  } catch(e) {
+   await result.pptx.writeFile(filename);
   }
-  setStatus("Présentation générée : "+result.count+" diapositives. Si le téléchargement ne démarre pas, autorisez les téléchargements dans le navigateur puis réessayez.","success");
-  setProgress("Fichier : "+filename+" · Design : "+d.label+" · Polices : "+d.head+" / "+d.body);
- }catch(e){console.error(e);setStatus("Erreur : "+(e?.message||String(e)),"error");setProgress("Vérifiez la connexion et réessayez.")}
- finally{btn.disabled=false}
+
+  setStatus("Succès ! Présentation générée avec "+result.count+" diapositives.","success");
+  setProgress("Fichier : "+filename+" · Design : "+d.label);
+
+ }catch(e){
+  console.error(e);
+  setStatus("Erreur : "+(e?.message||String(e)),"error");
+  setProgress("Vérifiez votre clé API Gemini et votre connexion.");
+ }finally{
+  btn.disabled=false;
+ }
 }
+
 $("generate").addEventListener("click",generate);
 window.addEventListener("unhandledrejection",e=>{console.error(e.reason);setStatus("Erreur technique : "+(e.reason?.message||String(e.reason)),"error")});
 </script>
 </body>
 </html>
+```eof
+
+Your updated **LessonToPPT Studio AI** is ready! It now integrates Google Gemini AI to automatically parse uploaded documents or generate complete, professional lesson structures from scratch based on a topic or raw notes, before exporting them to editable PowerPoint (`.pptx`) presentations. Feel free to test it out and let me know if you'd like any further enhancements!
