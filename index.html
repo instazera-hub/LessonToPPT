@@ -41,15 +41,26 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 </header>
 <main>
 <section class="card">
- <h2>01 · Configuration Gemini AI</h2>
- <p class="sub">Entrez votre clé API Google Gemini pour activer l'intelligence artificielle (stockée uniquement dans votre navigateur).</p>
+ <h2>01 · Sélection Rapide de Clé API Gemini</h2>
+ <p class="sub">Choisissez directement une clé API dans la liste ci-dessous pour travailler immédiatement sans copier-coller.</p>
+ 
  <div class="field">
-  <label for="apiKey">Clé API Google Gemini</label>
+  <label for="keySelector">🔑 Choisir une Clé API prédéfinie</label>
+  <select id="keySelector">
+   <!-- Remplacez les valeurs "AIzaSy..." ci-dessous par vos vraies clés Gemini -->
+   <option value="AIzaSy...VOTRE_CLE_1">Clé API Principal (Compte 1)</option>
+   <option value="AIzaSy...VOTRE_CLE_2">Clé API Secours (Compte 2)</option>
+   <option value="AIzaSy...VOTRE_CLE_3">Clé API Secours (Compte 3)</option>
+   <option value="custom">-- Saisir une clé manuellement --</option>
+  </select>
+ </div>
+
+ <div id="customKeyBox" class="field hidden">
+  <label for="apiKey">Clé API Personnalisée</label>
   <div style="display:flex; gap:10px;">
    <input id="apiKey" type="password" placeholder="AIzaSy...">
    <button id="saveKey" style="width:140px; padding:0 12px;">Enregistrer</button>
   </div>
-  <p class="muted" style="margin-top:6px;">Obtenez gratuitement une clé sur <a href="https://aistudio.google.com/" target="_blank" style="color:#3949ab;">Google AI Studio</a>.</p>
  </div>
 </section>
 
@@ -108,13 +119,31 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 "use strict";
 const $=id=>document.getElementById(id);
 
+// Gestion de la sélection des clés API
+function getSelectedApiKey() {
+ const selector = $("keySelector");
+ if (selector.value === "custom") {
+  return $("apiKey").value.trim() || localStorage.getItem("gemini_api_key");
+ }
+ return selector.value;
+}
+
+$("keySelector").addEventListener("change", (e) => {
+ if (e.target.value === "custom") {
+  $("customKeyBox").classList.remove("hidden");
+ } else {
+  $("customKeyBox").classList.add("hidden");
+ }
+});
+
 window.addEventListener("DOMContentLoaded",()=>{
  const saved=localStorage.getItem("gemini_api_key");
  if(saved) $("apiKey").value=saved;
 });
+
 $("saveKey").addEventListener("click",()=>{
  const key=$("apiKey").value.trim();
- if(key){localStorage.setItem("gemini_api_key",key);alert("Clé API enregistrée avec succès !");}
+ if(key){localStorage.setItem("gemini_api_key",key);alert("Clé API personnalisée enregistrée !");}
  else{localStorage.removeItem("gemini_api_key");alert("Clé API supprimée.");}
 });
 
@@ -207,12 +236,11 @@ async function extract(file,ext){
  return r.value;
 }
 
-// Prompting & Ultra Pro Parsing
 async function callGeminiPro(rawText, userTitle, isTopic=false){
- const apiKey = $("apiKey").value.trim() || localStorage.getItem("gemini_api_key");
- if(!apiKey) throw Error("Veuillez renseigner votre clé API Google Gemini.");
+ const apiKey = getSelectedApiKey();
+ if(!apiKey || apiKey.includes("VOTRE_CLE")) throw Error("Veuillez choisir une clé API valide dans la liste du haut.");
 
- setStatus("Rédaction et structuration bidaogique par l'IA…","info");
+ setStatus("Rédaction et structuration pédagogique par l'IA…","info");
 
  const prompt = `Tu es un professeur universitaire et expert en design de présentations.
 Transforme le contenu suivant en un cours magistral professionnel, rigoureux, synthétique et parfaitement structuré en français.
@@ -241,9 +269,9 @@ Renvoie UNIQUEMENT un JSON STRICT respectant cette structure sans markdown :
     {
       "type": "comparison",
       "heading": "Titre comparatif",
-      "leftTitle": "Option A / Forme X",
+      "leftTitle": "Option A",
       "leftPoints": ["A1", "A2"],
-      "rightTitle": "Option B / Forme Y",
+      "rightTitle": "Option B",
       "rightPoints": ["B1", "B2"]
     },
     {
@@ -269,7 +297,10 @@ Renvoie UNIQUEMENT un JSON STRICT respectant cette structure sans markdown :
   })
  });
 
- if(!response.ok) throw Error("Erreur de connexion avec Gemini API.");
+ if(!response.ok) {
+  const errData = await response.json().catch(()=>({}));
+  throw Error(`Erreur API (${response.status}) : ${errData.error?.message || response.statusText}`);
+ }
 
  const data = await response.json();
  const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -278,7 +309,7 @@ Renvoie UNIQUEMENT un JSON STRICT respectant cette structure sans markdown :
   let cleanJson = textResponse.trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
   return JSON.parse(cleanJson);
  } catch(e) {
-  throw Error("Format de réponse invalide. Veuillez réessayer.");
+  throw Error("Format de réponse JSON invalide de l'IA.");
  }
 }
 
@@ -286,13 +317,11 @@ function cleanName(s){return (s||"Cours").replace(/\.(pdf|docx)$/i,"").replace(/
 function addShape(slide,pptx,type,opts){slide.addShape(type,opts)}
 function addText(slide,text,opts){slide.addText(text,{margin:0.06,breakLine:false,fit:"shrink",...opts})}
 
-// Génération de diapositive dynamique Pro
 async function buildPresentationPro(aiData, d){
  const C=pptxCtor();
  const pptx=new C();pptx.layout="LAYOUT_WIDE";pptx.title=aiData.title || "Cours";
  const bg=d.bg, fg=d.fg, ac=d.accent, soft=d.soft;
 
- // 1. Page de Garde Pro
  const cover=pptx.addSlide();cover.background={color:bg};
  addShape(cover,pptx,pptx.ShapeType.rect,{x:0,y:0,w:.2,h:7.5,line:{color:ac,transparency:100},fill:{color:ac}});
  addText(cover,"SUPPORT DE COURS MAGISTRAL",{x:.8,y:.8,w:10.8,h:.35,fontFace:d.body,fontSize:10,bold:true,charSpacing:2,color:ac});
@@ -300,18 +329,14 @@ async function buildPresentationPro(aiData, d){
  if(aiData.subtitle) addText(cover,aiData.subtitle,{x:.8,y:3.8,w:10.5,h:.5,fontFace:d.body,fontSize:16,color:fg,transparency:20});
  addShape(cover,pptx,pptx.ShapeType.line,{x:.82,y:4.6,w:2.5,h:0,line:{color:ac,width:3}});
 
- // 2. Traitement des diapositives dynamiques
  aiData.slides.forEach((s, idx)=>{
   const slide=pptx.addSlide();slide.background={color:bg};
   
-  // Header
   addShape(slide,pptx,pptx.ShapeType.rect,{x:.55,y:.48,w:.08,h:.55,line:{color:ac,transparency:100},fill:{color:ac}});
   addText(slide,s.heading||"Section", {x:.78,y:.45,w:11.5,h:.6,fontFace:d.head,fontSize:26,bold:true,color:fg});
   addShape(slide,pptx,pptx.ShapeType.line,{x:.8,y:1.2,w:11.4,h:0,line:{color:soft,width:1.5}});
 
-  // Layout Renderers
   if(s.type === "comparison") {
-   // 2 Columns
    addShape(slide,pptx,pptx.ShapeType.roundRect,{x:.8,y:1.6,w:5.4,h:5.0,fill:{color:soft,transparency:50},line:{color:soft}});
    addText(slide,s.leftTitle||"Option A",{x:1.0,y:1.8,w:5.0,h:.4,fontFace:d.head,fontSize:18,bold:true,color:ac});
    slide.addText((s.leftPoints||[]).map(t=>({text:t,options:{bullet:true,breakLine:true}})), {x:1.0,y:2.4,w:5.0,h:4.0,fontFace:d.body,fontSize:15,color:fg});
@@ -321,7 +346,6 @@ async function buildPresentationPro(aiData, d){
    slide.addText((s.rightPoints||[]).map(t=>({text:t,options:{bullet:true,breakLine:true}})), {x:6.8,y:2.4,w:5.0,h:4.0,fontFace:d.body,fontSize:15,color:fg});
   } 
   else if(s.type === "cards" && s.cards) {
-   // Cards Layout
    const cardW = 11.4 / Math.min(s.cards.length, 4);
    s.cards.slice(0,4).forEach((c, cIdx)=>{
     const xPos = .8 + (cIdx * cardW) + (cIdx * 0.1);
@@ -331,7 +355,6 @@ async function buildPresentationPro(aiData, d){
    });
   } 
   else if(s.type === "process" && s.steps) {
-   // Process Steps Layout
    const stepH = 4.8 / s.steps.length;
    s.steps.forEach((st, stIdx)=>{
     const yPos = 1.6 + (stIdx * stepH);
@@ -342,12 +365,10 @@ async function buildPresentationPro(aiData, d){
    });
   }
   else {
-   // Standard Bullet Points Layout
    const bullets=(s.points||[]).map(t=>({text:t,options:{bullet:{indent:18},hanging:4,breakLine:true}}));
    slide.addText(bullets,{x:.95,y:1.6,w:11.1,h:5.0,fontFace:d.body,fontSize:18,color:fg,paraSpaceAfterPt:14,lineSpacingMultiple:1.1});
   }
 
-  // Footer
   addText(slide,String(idx+2).padStart(2,"0"),{x:12.0,y:6.9,w:.5,h:.25,fontFace:d.body,fontSize:9,color:ac,align:"right"});
  });
 
@@ -366,10 +387,10 @@ async function generate(){
   if(isTopicMode){
    rawText=$("topicInput").value.trim();
    userTitle=$("titleTopic").value.trim();
-   if(!rawText) return setStatus("Veuillez saisir un sujet.","error");
+   if(!rawText) return setStatus("Veuillez saisir un sujet ou des notes.","error");
   } else {
    const file=$("source").files[0];
-   if(!file) return setStatus("Veuillez choisir un fichier.","error");
+   if(!file) return setStatus("Veuillez choisir un fichier PDF ou Word.","error");
    const ext=file.name.split(".").pop().toLowerCase();
    if(ext==="pdf") await ensureLib("pdf"); else await ensureLib("word");
    rawText = await extract(file,ext);
