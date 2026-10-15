@@ -43,17 +43,15 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 <section class="card">
  <h2>01 · Clé API Google Gemini</h2>
  <p class="sub">Entrez votre clé API pour utiliser Gemini cloud.</p>
- 
  <div class="field" id="geminiSettings">
   <label for="apiKey">Clé API Google Gemini</label>
-  <div style="display:flex; gap:10px;">
+  <div style="display:flex;gap:10px;">
    <input id="apiKey" type="password" placeholder="AIzaSy...">
-   <button id="saveKey" style="width:140px; padding:0 12px;">Enregistrer</button>
+   <button id="saveKey" style="width:140px;padding:0 12px;">Enregistrer</button>
   </div>
-  <p class="muted" style="margin-top:6px;">Obtenez une clé gratuite sur <a href="https://aistudio.google.com/" target="_blank" style="color:#3949ab;">Google AI Studio</a>.</p>
+  <p class="muted" style="margin-top:6px;">Obtenez une clé gratuite sur <a href="https://aistudio.google.com/" target="_blank" rel="noopener" style="color:#3949ab;">Google AI Studio</a>.</p>
  </div>
 </section>
-
 <section class="card">
  <h2>02 · Source du cours</h2>
  <p class="sub">Importez un document ou rédigez un sujet pour générer le cours.</p>
@@ -70,7 +68,6 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
   <div class="field"><label for="titleTopic">Titre de la présentation</label><input id="titleTopic" type="text" placeholder="Ex. : Inflammation Aiguë"></div>
  </div>
 </section>
-
 <section class="card">
  <h2>03 · Direction artistique</h2>
  <p class="sub">Choisissez un style de design pour la présentation.</p>
@@ -94,7 +91,6 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
   </div>
  </div>
 </section>
-
 <section class="card">
  <h2>04 · Générer le PowerPoint</h2>
  <button id="generate">Créer la présentation .pptx</button>
@@ -102,7 +98,6 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 </section>
 </main>
 <footer>LessonToPPT Studio Hybrid</footer>
-
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -149,7 +144,7 @@ const fontPairs={
 let currentDesign=designs.clinical;
 function mode(){return document.querySelector('input[name="designMode"]:checked').value}
 function chooseSmart(text){
- const t=(text).toLowerCase();
+ const t=(text||"").toLowerCase();
  if(t.includes("patient")||t.includes("maladie")||t.includes("anatom")||t.includes("patholog")||t.includes("clinique")||t.includes("cellule")) return {...designs.clinical};
  if(t.includes("informatique")||t.includes("ia")||t.includes("code")||t.includes("réseau")) return {...designs.technology};
  return {...designs.editorial};
@@ -179,17 +174,17 @@ updateDesign();
 
 function setStatus(t,c="info"){$("status").textContent=t;$("status").className="status "+c}
 function setProgress(t){$("progress").textContent=t}
-function loadScript(url){return new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=url;s.async=true;s.onload=resolve;s.onerror=()=>{s.remove();reject(Error("Échec de chargement"))};document.head.appendChild(s)})}
+function loadScript(url){return new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=url;s.async=true;s.onload=resolve;s.onerror=()=>{s.remove();reject(Error("Échec de chargement de "+url))};document.head.appendChild(s)})}
 async function ensureLib(kind){
  const ready=()=>kind==="pdf"?!!window.pdfjsLib:kind==="word"?!!window.mammoth:!!pptxCtor();
  if(ready())return;
  const urls={
- pdf:["https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"],
- word:["https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"],
- pptx:["https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"]
+  pdf:["https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"],
+  word:["https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"],
+  pptx:["https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"]
  };
  for(const u of urls[kind]){try{await loadScript(u);if(ready())return;}catch(e){}}
- throw Error("Impossible de charger "+kind);
+ throw Error("Impossible de charger "+kind+". Vérifiez votre connexion Internet.");
 }
 function pptxCtor(){return typeof window.pptxgen==="function"?window.pptxgen:typeof window.PptxGenJS==="function"?window.PptxGenJS:null}
 
@@ -201,146 +196,184 @@ async function extract(file,ext){
   for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i),c=await pg.getTextContent();arr.push(c.items.map(x=>x.str||"").join(" "));}
   return arr.join("\n");
  }
+ if(ext!=="docx")throw Error("Format non pris en charge. Utilisez un fichier PDF ou DOCX.");
  const r=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
  return r.value;
 }
 
-async function callAI(rawText, userTitle, isTopic=false){
- const prompt = `Tu es un professeur universitaire et expert en design de présentations. Transforme le contenu suivant en un cours magistral professionnel et structuré en français. Renvoie UNIQUEMENT un objet JSON valide (sans markdown) avec la structure exacte:
+async function callAI(rawText,userTitle,isTopic=false){
+ const apiKey=$("apiKey").value.trim()||localStorage.getItem("gemini_api_key");
+ if(!apiKey)throw Error("Veuillez renseigner votre clé API Google Gemini.");
+
+ const prompt=`Tu es un professeur universitaire et expert en design de présentations. Transforme le contenu suivant en un cours magistral professionnel, précis et structuré en français. Renvoie UNIQUEMENT un objet JSON valide, sans Markdown, avec cette structure :
 {
-  "title": "Titre du cours",
-  "subtitle": "Sous-titre",
-  "slides": [
-    {"type": "standard", "heading": "Titre", "points": ["P1", "P2", "P3"]},
-    {"type": "comparison", "heading": "Comparaison", "leftTitle": "A", "leftPoints": ["x"], "rightTitle": "B", "rightPoints": ["y"]},
-    {"type": "process", "heading": "Étapes", "steps": [{"step": "1", "desc": "..."}]},
-    {"type": "cards", "heading": "Cartes", "cards": [{"title": "...", "text": "..."}]}
-  ]
+ "title":"Titre du cours",
+ "subtitle":"Sous-titre",
+ "slides":[
+  {"type":"standard","heading":"Titre","points":["P1","P2","P3"]},
+  {"type":"comparison","heading":"Comparaison","leftTitle":"A","leftPoints":["x"],"rightTitle":"B","rightPoints":["y"]},
+  {"type":"process","heading":"Étapes","steps":[{"step":"1","desc":"..."}]},
+  {"type":"cards","heading":"Cartes","cards":[{"title":"...","text":"..."}]}
+ ]
 }
-Matière/Sujet : ${isTopic ? rawText : rawText.slice(0, 16000)}
-Titre : ${userTitle || 'Cours'}`;
+Consignes :
+- Construis un cours pédagogique avec une progression logique.
+- Préserve les faits importants et évite les répétitions.
+- N'invente pas de données précises qui ne sont pas présentes dans le contenu.
+- Fais des diapositives lisibles, avec des points concis et informatifs.
+- Utilise les différents types de diapositives quand ils sont pertinents.
+- Vise 8 à 14 diapositives selon la longueur du contenu.
+Sujet ou contenu : ${rawText.slice(0,16000)}
+Titre demandé : ${userTitle||"Cours"}`;
 
- const apiKey = $("apiKey").value.trim() || localStorage.getItem("gemini_api_key");
- if(!apiKey) throw Error("Veuillez renseigner votre clé API Google Gemini.");
  setStatus("Analyse par Google Gemini...","info");
+ setProgress("Envoi du contenu à Gemini...");
 
- // تم تحديث الرابط إلى الإصدار المستقر v1 والنموذج الصحيح
- const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
- const response = await fetch(url, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-   contents: [{ parts: [{ text: prompt }] }]
-  })
- });
- 
- if(!response.ok) {
-  const errDetails = await response.text();
-  throw Error(`Gemini API Error (${response.status}): ${errDetails}`);
+ // Modèle stable documenté par Google ; endpoint REST v1beta.
+ const url="https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
+ let response;
+ try{
+  response=await fetch(url,{
+   method:"POST",
+   headers:{"Content-Type":"application/json","x-goog-api-key":apiKey},
+   body:JSON.stringify({
+    contents:[{role:"user",parts:[{text:prompt}]}],
+    generationConfig:{
+     responseMimeType:"application/json",
+     temperature:0.4,
+     maxOutputTokens:8192
+    }
+   })
+  });
+ }catch(e){
+  throw Error("Connexion à Gemini impossible. Vérifiez Internet et les paramètres d'accès API.");
  }
- 
- const data = await response.json();
- const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
- if (!textResponse) throw Error("Réponse vide reçue de Gemini.");
- return JSON.parse(textResponse.trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim());
+
+ const responseText=await response.text();
+ let data;
+ try{data=JSON.parse(responseText);}
+ catch{throw Error("Réponse invalide reçue du serveur Gemini.");}
+
+ if(!response.ok){
+  const msg=data.error?.message||"Erreur inconnue";
+  if(response.status===400)throw Error("Gemini API Error (400): "+msg);
+  if(response.status===401||response.status===403)throw Error("Clé API refusée ou accès non autorisé (HTTP "+response.status+"). Vérifiez la clé et les autorisations : "+msg);
+  if(response.status===404)throw Error("Modèle Gemini introuvable pour cette clé ou cette API (404). Consultez la liste des modèles disponibles dans Google AI Studio. Détail : "+msg);
+  if(response.status===429)throw Error("Limite de requêtes ou quota Gemini atteint (429). Réessayez plus tard. Détail : "+msg);
+  throw Error("Gemini API Error ("+response.status+"): "+msg);
+ }
+
+ const generatedText=data.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("").trim();
+ if(!generatedText)throw Error("Gemini n'a retourné aucun contenu. Essayez un sujet plus court ou vérifiez les limites du modèle.");
+
+ let aiData;
+ try{
+  aiData=JSON.parse(generatedText.replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/\s*```$/,"").trim());
+ }catch{
+  throw Error("Gemini a répondu, mais le JSON généré est invalide. Réessayez.");
+ }
+
+ if(!aiData||typeof aiData.title!=="string"||!Array.isArray(aiData.slides)||aiData.slides.length===0){
+  throw Error("La réponse de Gemini ne respecte pas le format de présentation attendu.");
+ }
+ return aiData;
 }
 
 function cleanName(s){return (s||"Cours").replace(/\.(pdf|docx)$/i,"").replace(/[\\/:*?"<>|]/g,"").trim().slice(0,80)||"Cours"}
 function addShape(slide,pptx,type,opts){slide.addShape(type,opts)}
 function addText(slide,text,opts){slide.addText(text,{margin:0.06,breakLine:false,fit:"shrink",...opts})}
 
-async function buildPresentationPro(aiData, d){
+async function buildPresentationPro(aiData,d){
  const C=pptxCtor();
- const pptx=new C();pptx.layout="LAYOUT_WIDE";pptx.title=aiData.title || "Cours";
- const bg=d.bg, fg=d.fg, ac=d.accent, soft=d.soft;
-
+ const pptx=new C();pptx.layout="LAYOUT_WIDE";pptx.title=aiData.title||"Cours";
+ const bg=d.bg,fg=d.fg,ac=d.accent,soft=d.soft;
  const cover=pptx.addSlide();cover.background={color:bg};
  addShape(cover,pptx,pptx.ShapeType.rect,{x:0,y:0,w:.2,h:7.5,line:{color:ac,transparency:100},fill:{color:ac}});
  addText(cover,"SUPPORT DE COURS HYBRIDE",{x:.8,y:.8,w:10.8,h:.35,fontFace:d.body,fontSize:10,bold:true,charSpacing:2,color:ac});
  addText(cover,aiData.title||"Présentation",{x:.78,y:1.55,w:10.9,h:2.0,fontFace:d.head,fontSize:40,bold:true,color:fg,valign:"mid"});
- if(aiData.subtitle) addText(cover,aiData.subtitle,{x:.8,y:3.8,w:10.5,h:.5,fontFace:d.body,fontSize:16,color:fg,transparency:20});
+ if(aiData.subtitle)addText(cover,aiData.subtitle,{x:.8,y:3.8,w:10.5,h:.5,fontFace:d.body,fontSize:16,color:fg,transparency:20});
  addShape(cover,pptx,pptx.ShapeType.line,{x:.82,y:4.6,w:2.5,h:0,line:{color:ac,width:3}});
 
- aiData.slides.forEach((s, idx)=>{
+ (aiData.slides||[]).forEach((s,idx)=>{
   const slide=pptx.addSlide();slide.background={color:bg};
   addShape(slide,pptx,pptx.ShapeType.rect,{x:.55,y:.48,w:.08,h:.55,line:{color:ac,transparency:100},fill:{color:ac}});
-  addText(slide,s.heading||"Section", {x:.78,y:.45,w:11.5,h:.6,fontFace:d.head,fontSize:26,bold:true,color:fg});
+  addText(slide,s.heading||"Section",{x:.78,y:.45,w:11.5,h:.6,fontFace:d.head,fontSize:26,bold:true,color:fg});
   addShape(slide,pptx,pptx.ShapeType.line,{x:.8,y:1.2,w:11.4,h:0,line:{color:soft,width:1.5}});
 
-  if(s.type === "comparison") {
+  if(s.type==="comparison"){
    addShape(slide,pptx,pptx.ShapeType.roundRect,{x:.8,y:1.6,w:5.4,h:5.0,fill:{color:soft,transparency:50},line:{color:soft}});
    addText(slide,s.leftTitle||"A",{x:1.0,y:1.8,w:5.0,h:.4,fontFace:d.head,fontSize:18,bold:true,color:ac});
-   slide.addText((s.leftPoints||[]).map(t=>({text:t,options:{bullet:true,breakLine:true}})), {x:1.0,y:2.4,w:5.0,h:4.0,fontFace:d.body,fontSize:15,color:fg});
-
+   slide.addText((s.leftPoints||[]).map(t=>({text:String(t),options:{bullet:true,breakLine:true}})),{x:1.0,y:2.4,w:5.0,h:4.0,fontFace:d.body,fontSize:15,color:fg});
    addShape(slide,pptx,pptx.ShapeType.roundRect,{x:6.6,y:1.6,w:5.4,h:5.0,fill:{color:soft,transparency:50},line:{color:soft}});
    addText(slide,s.rightTitle||"B",{x:6.8,y:1.8,w:5.0,h:.4,fontFace:d.head,fontSize:18,bold:true,color:ac});
-   slide.addText((s.rightPoints||[]).map(t=>({text:t,options:{bullet:true,breakLine:true}})), {x:6.8,y:2.4,w:5.0,h:4.0,fontFace:d.body,fontSize:15,color:fg});
-  } else if(s.type === "cards" && s.cards) {
-   const cardW = 11.4 / Math.min(s.cards.length, 4);
-   s.cards.slice(0,4).forEach((c, cIdx)=>{
-    const xPos = .8 + (cIdx * cardW) + (cIdx * 0.1);
-    addShape(slide,pptx,pptx.ShapeType.roundRect,{x:xPos,y:1.8,w:cardW-0.2,h:4.8,fill:{color:soft,transparency:40},line:{color:ac,width:1}});
-    addText(slide,c.title||"",{x:xPos+0.1,y:2.0,w:cardW-0.4,h:.6,fontFace:d.head,fontSize:16,bold:true,color:ac});
-    addText(slide,c.text||"",{x:xPos+0.1,y:2.7,w:cardW-0.4,h:3.7,fontFace:d.body,fontSize:14,color:fg});
+   slide.addText((s.rightPoints||[]).map(t=>({text:String(t),options:{bullet:true,breakLine:true}})),{x:6.8,y:2.4,w:5.0,h:4.0,fontFace:d.body,fontSize:15,color:fg});
+  }else if(s.type==="cards"&&Array.isArray(s.cards)&&s.cards.length){
+   const cardW=11.4/Math.min(s.cards.length,4);
+   s.cards.slice(0,4).forEach((c,i)=>{
+    const xPos=.8+i*cardW+i*.1;
+    addShape(slide,pptx,pptx.ShapeType.roundRect,{x:xPos,y:1.8,w:cardW-.2,h:4.8,fill:{color:soft,transparency:40},line:{color:ac,width:1}});
+    addText(slide,c.title||"",{x:xPos+.1,y:2.0,w:cardW-.4,h:.6,fontFace:d.head,fontSize:16,bold:true,color:ac});
+    addText(slide,c.text||"",{x:xPos+.1,y:2.7,w:cardW-.4,h:3.7,fontFace:d.body,fontSize:14,color:fg});
    });
-  } else if(s.type === "process" && s.steps) {
-   const stepH = 4.8 / s.steps.length;
-   s.steps.forEach((st, stIdx)=>{
-    const yPos = 1.6 + (stIdx * stepH);
-    addShape(slide,pptx,pptx.ShapeType.oval,{x:.8,y:yPos+0.1,w:.5,h:.5,fill:{color:ac}});
-    addText(slide,String(stIdx+1),{x:.8,y:yPos+0.1,w:.5,h:.5,fontFace:d.body,fontSize:14,bold:true,color:"FFFFFF",align:"center"});
-    addText(slide,st.step||"",{x:1.5,y:yPos,w:10.5,h:.3,fontFace:d.head,fontSize:16,bold:true,color:fg});
-    addText(slide,st.desc||"",{x:1.5,y:yPos+.3,w:10.5,h:.4,fontFace:d.body,fontSize:14,color:fg,transparency:15});
+  }else if(s.type==="process"&&Array.isArray(s.steps)&&s.steps.length){
+   const steps=s.steps.slice(0,7),stepH=4.8/steps.length;
+   steps.forEach((st,i)=>{
+    const y=1.6+i*stepH;
+    addShape(slide,pptx,pptx.ShapeType.oval,{x:.8,y:y+.1,w:.5,h:.5,fill:{color:ac},line:{color:ac}});
+    addText(slide,String(i+1),{x:.8,y:y+.1,w:.5,h:.5,fontFace:d.body,fontSize:14,bold:true,color:"FFFFFF",align:"center"});
+    addText(slide,st.step||"",{x:1.5,y,w:10.5,h:.3,fontFace:d.head,fontSize:16,bold:true,color:fg});
+    addText(slide,st.desc||"",{x:1.5,y:y+.3,w:10.5,h:.4,fontFace:d.body,fontSize:14,color:fg,transparency:15});
    });
-  } else {
-   const bullets=(s.points||[]).map(t=>({text:t,options:{bullet:{indent:18},hanging:4,breakLine:true}}));
-   slide.addText(bullets,{x:.95,y:1.6,w:11.1,h:5.0,fontFace:d.body,fontSize:18,color:fg,paraSpaceAfterPt:14,lineSpacingMultiple:1.1});
+  }else{
+   const bullets=(s.points||[]).map(t=>({text:String(t),options:{bullet:{indent:18},hanging:4,breakLine:true}}));
+   slide.addText(bullets.length?bullets:[{text:"Contenu à compléter",options:{breakLine:true}}],{x:.95,y:1.6,w:11.1,h:5.0,fontFace:d.body,fontSize:18,color:fg,paraSpaceAfterPt:14,lineSpacingMultiple:1.1});
   }
   addText(slide,String(idx+2).padStart(2,"0"),{x:12.0,y:6.9,w:.5,h:.25,fontFace:d.body,fontSize:9,color:ac,align:"right"});
  });
-
- return {pptx, count: aiData.slides.length + 1};
+ return {pptx,count:aiData.slides.length+1};
 }
 
 async function generate(){
  const btn=$("generate");
- const isTopicMode = !$("tabTopicContent").classList.contains("hidden");
- let rawText="", userTitle="";
-
+ const isTopicMode=!$("tabTopicContent").classList.contains("hidden");
+ btn.disabled=true;
  try{
-  await ensureLib("pptx");
+  let rawText="",userTitle="";
   if(isTopicMode){
    rawText=$("topicInput").value.trim();
    userTitle=$("titleTopic").value.trim();
-   if(!rawText) return setStatus("Veuillez saisir un sujet.","error");
-  } else {
+   if(!rawText)throw Error("Veuillez saisir un sujet.");
+  }else{
    const file=$("source").files[0];
-   if(!file) return setStatus("Veuillez choisir un fichier.","error");
+   if(!file)throw Error("Veuillez choisir un fichier PDF ou DOCX.");
    const ext=file.name.split(".").pop().toLowerCase();
-   if(ext==="pdf") await ensureLib("pdf"); else await ensureLib("word");
-   rawText = await extract(file,ext);
-   userTitle=$("titleFile").value.trim() || cleanName(file.name);
+   if(ext==="pdf")await ensureLib("pdf");
+   else if(ext==="docx")await ensureLib("word");
+   else throw Error("Format non pris en charge. Utilisez PDF ou DOCX.");
+   setStatus("Lecture du document...","info");
+   rawText=await extract(file,ext);
+   if(!rawText.trim())throw Error("Aucun texte n'a été extrait. Le PDF est peut-être un scan sans texte sélectionnable.");
+   userTitle=$("titleFile").value.trim()||cleanName(file.name);
   }
-
-  btn.disabled = true;
-  const aiData = await callAI(rawText, userTitle, isTopicMode);
-  setStatus("Création du PowerPoint en cours...", "info");
-
-  const { pptx, count } = await buildPresentationPro(aiData, currentDesign);
-  const fileName = cleanName(userTitle) + ".pptx";
-  await pptx.writeFile({ fileName });
-
-  setStatus(`Succès ! Présentation générée (${count} diapos).`, "success");
-  setProgress("");
- } catch(err) {
+  if(!rawText.trim())throw Error("Le contenu est vide.");
+  const aiData=await callAI(rawText,userTitle,isTopicMode);
+  setStatus("Création du PowerPoint en cours...","info");
+  setProgress("Construction des diapositives...");
+  await ensureLib("pptx");
+  const {pptx,count}=await buildPresentationPro(aiData,currentDesign);
+  const fileName=cleanName(userTitle||aiData.title)+".pptx";
+  await pptx.writeFile({fileName});
+  setStatus(`Succès ! Présentation générée (${count} diapositives).`,"success");
+  setProgress("Le fichier .pptx a été téléchargé. Vérifiez le dossier Téléchargements.");
+ }catch(err){
   console.error(err);
-  setStatus("Erreur : " + err.message, "error");
- } finally {
-  btn.disabled = false;
+  setStatus("Erreur : "+(err?.message||String(err)),"error");
+  setProgress("");
+ }finally{
+  btn.disabled=false;
  }
 }
-
-$("generate").addEventListener("click", generate);
+$("generate").addEventListener("click",generate);
 </script>
 </body>
 </html>
