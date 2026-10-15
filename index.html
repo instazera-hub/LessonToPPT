@@ -259,14 +259,13 @@ Titre : ${userTitle || 'Cours'}`;
   if(!apiKey) throw Error("Veuillez renseigner votre clé API Google Gemini.");
   setStatus("Analyse par Google Gemini...","info");
 
-  // تم تعديل اسم النموذج هنا إلى gemini-pro لضمان توافقه التام واستقرار الاتصال
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+  // استخدام المسار الموحد الصحيح
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
    method: "POST",
    headers: { "Content-Type": "application/json" },
    body: JSON.stringify({
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.2 }
+    contents: [{ parts: [{ text: prompt }] }]
    })
   });
   
