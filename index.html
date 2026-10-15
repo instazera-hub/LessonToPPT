@@ -37,42 +37,20 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 <header>
  <div class="kicker">Studio IA Hybride & Présentation</div>
  <h1>LessonToPPT Studio Hybrid</h1>
- <p>Choisissez entre l'intelligence artificielle en ligne (Gemini) ou locale (Ollama / Local AI) pour structurer vos cours.</p>
+ <p>Générez vos cours et présentations directement depuis votre téléphone.</p>
 </header>
 <main>
 <section class="card">
- <h2>01 · Choix du Mode d'Intelligence Artificielle</h2>
- <p class="sub">Sélectionnez si vous souhaitez utiliser le cloud de Google ou un modèle local sur votre appareil.</p>
+ <h2>01 · Clé API Google Gemini</h2>
+ <p class="sub">Entrez votre clé API pour utiliser Gemini cloud.</p>
  
- <div class="field">
-  <label for="aiModeSelect">Mode d'IA</label>
-  <select id="aiModeSelect">
-   <option value="gemini">Google Gemini (En ligne / Cloud)</option>
-   <option value="local">Modèle Local (Ollama / Local Server)</option>
-  </select>
- </div>
-
- <div id="geminiSettings" class="field">
+ <div class="field" id="geminiSettings">
   <label for="apiKey">Clé API Google Gemini</label>
   <div style="display:flex; gap:10px;">
    <input id="apiKey" type="password" placeholder="AIzaSy...">
    <button id="saveKey" style="width:140px; padding:0 12px;">Enregistrer</button>
   </div>
   <p class="muted" style="margin-top:6px;">Obtenez une clé gratuite sur <a href="https://aistudio.google.com/" target="_blank" style="color:#3949ab;">Google AI Studio</a>.</p>
- </div>
-
- <div id="localSettings" class="field hidden">
-  <div class="grid">
-   <div>
-    <label for="localUrl">URL du serveur local</label>
-    <input id="localUrl" type="text" value="http://localhost:11434" placeholder="http://localhost:11434">
-   </div>
-   <div>
-    <label for="localModel">Nom du modèle (ex: llama3, mistral)</label>
-    <input id="localModel" type="text" value="llama3" placeholder="llama3">
-   </div>
-  </div>
-  <p class="muted" style="margin-top:6px;">Assurez-vous que votre serveur local (comme Ollama) autorise les requêtes CORS.</p>
  </div>
 </section>
 
@@ -128,17 +106,6 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-
-$("aiModeSelect").addEventListener("change", (e) => {
- const val = e.target.value;
- if(val === "gemini") {
-  $("geminiSettings").classList.remove("hidden");
-  $("localSettings").classList.add("hidden");
- } else {
-  $("geminiSettings").classList.add("hidden");
-  $("localSettings").classList.remove("hidden");
- }
-});
 
 window.addEventListener("DOMContentLoaded",()=>{
  const saved=localStorage.getItem("gemini_api_key");
@@ -239,7 +206,6 @@ async function extract(file,ext){
 }
 
 async function callAI(rawText, userTitle, isTopic=false){
- const modeChoice = $("aiModeSelect").value;
  const prompt = `Tu es un professeur universitaire et expert en design de présentations. Transforme le contenu suivant en un cours magistral professionnel et structuré en français. Renvoie UNIQUEMENT un objet JSON valide (sans markdown) avec la structure exacte:
 {
   "title": "Titre du cours",
@@ -254,50 +220,29 @@ async function callAI(rawText, userTitle, isTopic=false){
 Matière/Sujet : ${isTopic ? rawText : rawText.slice(0, 16000)}
 Titre : ${userTitle || 'Cours'}`;
 
- if(modeChoice === "gemini") {
-  const apiKey = $("apiKey").value.trim() || localStorage.getItem("gemini_api_key");
-  if(!apiKey) throw Error("Veuillez renseigner votre clé API Google Gemini.");
-  setStatus("Analyse par Google Gemini...","info");
+ const apiKey = $("apiKey").value.trim() || localStorage.getItem("gemini_api_key");
+ if(!apiKey) throw Error("Veuillez renseigner votre clé API Google Gemini.");
+ setStatus("Analyse par Google Gemini...","info");
 
-  // استخدام المسار الموحد الصحيح
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-  const response = await fetch(url, {
-   method: "POST",
-   headers: { "Content-Type": "application/json" },
-   body: JSON.stringify({
-    contents: [{ parts: [{ text: prompt }] }]
-   })
-  });
-  
-  if(!response.ok) {
-   const errDetails = await response.text();
-   throw Error(`Gemini API Error (${response.status}): ${errDetails}`);
-  }
-  
-  const data = await response.json();
-  const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!textResponse) throw Error("Réponse vide reçue de Gemini.");
-  return JSON.parse(textResponse.trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim());
-
- } else {
-  const localUrl = $("localUrl").value.trim() || "http://localhost:11434";
-  const modelName = $("localModel").value.trim() || "llama3";
-  setStatus("Analyse par le modèle local ("+modelName+")...","info");
-
-  const response = await fetch(`${localUrl}/api/generate`, {
-   method: "POST",
-   headers: { "Content-Type": "application/json" },
-   body: JSON.stringify({
-    model: modelName,
-    prompt: prompt + "\n\nRéponds UNIQUEMENT en JSON valide sans texte supplémentaire.",
-    stream: false,
-    format: "json"
-   })
-  });
-  if(!response.ok) throw Error("Erreur de connexion au serveur local (Ollama). Vérifiez l'URL.");
-  const data = await response.json();
-  return JSON.parse(data.response.trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim());
+ // تم تحديث الرابط إلى الإصدار المستقر v1 والنموذج الصحيح
+ const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+ const response = await fetch(url, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+   contents: [{ parts: [{ text: prompt }] }]
+  })
+ });
+ 
+ if(!response.ok) {
+  const errDetails = await response.text();
+  throw Error(`Gemini API Error (${response.status}): ${errDetails}`);
  }
+ 
+ const data = await response.json();
+ const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+ if (!textResponse) throw Error("Réponse vide reçue de Gemini.");
+ return JSON.parse(textResponse.trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim());
 }
 
 function cleanName(s){return (s||"Cours").replace(/\.(pdf|docx)$/i,"").replace(/[\\/:*?"<>|]/g,"").trim().slice(0,80)||"Cours"}
