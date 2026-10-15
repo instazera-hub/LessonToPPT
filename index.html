@@ -268,9 +268,15 @@ Titre : ${userTitle || 'Cours'}`;
     generationConfig: { temperature: 0.2, responseMimeType: "application/json" }
    })
   });
-  if(!response.ok) throw Error("Erreur Gemini API");
+  
+  if(!response.ok) {
+   const errDetails = await response.text();
+   throw Error(`Gemini API Error (${response.status}): ${errDetails}`);
+  }
+  
   const data = await response.json();
   const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!textResponse) throw Error("Réponse vide reçue de Gemini.");
   return JSON.parse(textResponse.trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim());
 
  } else {
