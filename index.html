@@ -3,354 +3,406 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#10182f">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#5661e9">
 <title>LessonToPPT</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --bg:#f3f5fb;
-  --panel:#ffffff;
-  --ink:#17233e;
-  --muted:#69758c;
-  --accent:#5865e8;
-  --line:#e1e6f0;
+  --primary: #5865e9;
+  --background: #f3f5fb;
+  --surface: #ffffff;
+  --text: #202943;
+  --muted: #778197;
+  --border: #e0e5ef;
 }
-* { box-sizing:border-box; }
+* { box-sizing: border-box; }
 body {
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:Inter,Arial,sans-serif;
+  margin: 0;
+  font-family: "Aptos", "Arial", sans-serif;
+  background: var(--background);
+  color: var(--text);
+  font-size: 17px;
 }
 header {
-  background:#10182f;
-  color:white;
-  padding:24px 18px;
+  padding: 27px 20px;
+  color: white;
+  background: linear-gradient(135deg,#5364eb,#7b65e8);
 }
-.top {
-  max-width:900px;
-  margin:auto;
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-.logo {
-  background:#6977ff;
-  width:44px;height:44px;
-  border-radius:13px;
-  display:grid;place-items:center;
-  font-size:24px;font-weight:800;
-}
-header h1 { margin:0;font-size:23px; }
-header p { margin:5px 0 0;color:#c5cde3;font-size:13px; }
+header h1 { margin: 0 0 8px; font-size: 30px; }
+header p { margin: 0; opacity: .92; line-height: 1.5; }
 main {
-  max-width:900px;
-  margin:24px auto;
-  padding:0 14px 40px;
+  max-width: 760px;
+  margin: 22px auto;
+  padding: 0 14px;
 }
 .card {
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:20px;
-  margin-bottom:16px;
-  box-shadow:0 5px 20px #25365c08;
+  background: var(--surface);
+  padding: 22px;
+  border-radius: 23px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 5px 20px #26385a08;
 }
-h2 { font-size:19px;margin:0 0 8px; }
-.desc { color:var(--muted);font-size:14px;line-height:1.7; }
+h2 { font-size: 24px; margin: 0 0 18px; }
+.field { margin-bottom: 20px; }
 label {
-  display:block;
-  font-size:13px;
-  font-weight:700;
-  margin:16px 0 8px;
+  display: block;
+  font-weight: 700;
+  margin-bottom: 9px;
+  font-size: 17px;
 }
-input,select {
-  width:100%;
-  padding:13px;
-  border:1px solid #d9dfed;
-  border-radius:10px;
-  background:white;
-  color:var(--ink);
-  font-size:15px;
+input[type="file"], select, input[type="text"] {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #d9deea;
+  border-radius: 14px;
+  background: white;
+  color: var(--text);
+  font-size: 17px;
 }
-input[type=file] { background:#f8f9fd; }
-.grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
+input[type="file"] { font-size: 15px; }
 button {
-  border:0;
-  border-radius:11px;
-  padding:14px 16px;
-  background:var(--accent);
-  color:white;
-  font-size:15px;
-  font-weight:700;
-  cursor:pointer;
-  width:100%;
-  margin-top:18px;
+  width: 100%;
+  border: 0;
+  border-radius: 15px;
+  padding: 17px 13px;
+  background: var(--primary);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
 }
-button:disabled { opacity:.55; }
+button:disabled { opacity: .55; cursor: wait; }
 button.secondary {
-  background:#e9ecff;
-  color:#3444bd;
-  margin-top:10px;
+  background: #edf0ff;
+  color: #4855cb;
+  margin-top: 12px;
 }
-.status {
-  margin-top:14px;
-  padding:12px;
-  border-radius:10px;
-  background:#f1f3ff;
-  color:#3444bd;
-  font-size:13px;
-  line-height:1.6;
-  overflow-wrap:anywhere;
-}
-.status:empty { display:none; }
 .preview {
-  margin-top:14px;
-  padding:18px;
-  border-radius:13px;
-  background:#111c39;
-  color:white;
-  min-height:150px;
+  padding: 25px;
+  border-radius: 19px;
+  min-height: 205px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-wrap: anywhere;
+  transition: background .2s;
 }
-.preview .eyebrow {
-  color:#aab6ff;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:2px;
+.preview small {
+  letter-spacing: 3px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  opacity: .8;
 }
 .preview h3 {
-  font-family:Montserrat,Inter,sans-serif;
-  font-size:28px;
-  line-height:1.25;
-  margin:15px 0;
+  margin: 0 0 14px;
+  font-size: 35px;
+  line-height: 1.2;
 }
-.preview p { color:#d6ddf1;font-size:14px; }
-footer {
-  text-align:center;
-  color:var(--muted);
-  font-size:12px;
-  padding:8px 20px 25px;
+.preview p { margin: 0; font-size: 21px; line-height: 1.5; }
+.theme-midnight { background:#102d27; color:#fff; }
+.theme-minimal { background:#fff; color:#202943; border:1px solid #ddd; }
+.theme-forest { background:#e4f0e5; color:#214b36; }
+.theme-sunset { background:#fff0e6; color:#843f36; }
+.notice {
+  margin-top: 15px;
+  border-radius: 13px;
+  padding: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  display: none;
 }
-@media(max-width:520px) {
-  .grid { grid-template-columns:1fr; }
-  .card { padding:16px; }
+.notice.error { display:block; background:#fff0f0; color:#a32929; }
+.notice.success { display:block; background:#e8f8ef; color:#176b40; }
+.notice.info { display:block; background:#eef1ff; color:#4654bd; }
+.muted { color:var(--muted); line-height:1.7; }
+footer { text-align:center; padding:28px 12px; color:var(--muted); }
+.progress { margin-top:12px; color:var(--muted); font-size:15px; }
+@media(max-width:480px) {
+  header h1 { font-size:27px; }
+  .card { padding:18px; }
+  .preview h3 { font-size:30px; }
 }
 </style>
 </head>
 
 <body>
 <header>
-  <div class="top">
-    <div class="logo">L</div>
-    <div>
-      <h1>LessonToPPT</h1>
-      <p>Vos cours, transformés en présentations élégantes.</p>
-    </div>
-  </div>
+  <h1>LessonToPPT</h1>
+  <p>Transformez vos cours en présentations PowerPoint claires et élégantes.</p>
 </header>
 
 <main>
   <section class="card">
     <h2>Créer une présentation</h2>
-    <p class="desc">
-      Importez un cours PDF ou Word, choisissez un style
-      et générez un fichier PowerPoint modifiable.
-      Vos documents sont traités dans votre navigateur.
-    </p>
 
-    <label for="lesson">1. Choisir votre cours</label>
-    <input id="lesson" type="file"
-      accept=".pdf,.docx,application/pdf,
-      application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+    <div class="field">
+      <label for="lessonFile">Votre cours (PDF ou Word)</label>
+      <input id="lessonFile" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+      <p class="muted">Formats acceptés : PDF et Word (.docx).</p>
+    </div>
 
-    <div class="grid">
-      <div>
-        <label for="style">2. Style visuel</label>
-        <select id="style">
-          <option value="midnight">Midnight — Bleu académique</option>
-          <option value="minimal">Minimal — Blanc épuré</option>
-          <option value="forest">Forest — Vert scientifique</option>
-          <option value="sunset">Sunset — Corail moderne</option>
-        </select>
-      </div>
-      <div>
-        <label for="font">3. Police</label>
-        <select id="font">
-          <option value="Aptos">Aptos</option>
-          <option value="Arial">Arial</option>
-          <option value="Inter">Inter</option>
-          <option value="Montserrat">Montserrat</option>
-          <option value="Georgia">Georgia</option>
-        </select>
+    <div class="field">
+      <label for="presentationTitle">Titre de la présentation</label>
+      <input id="presentationTitle" type="text" placeholder="Ex. : Introduction à la biologie">
+    </div>
+
+    <div class="field">
+      <label for="theme">Style des diapositives</label>
+      <select id="theme">
+        <option value="midnight">Midnight — Élégant et sombre</option>
+        <option value="minimal">Minimal — Blanc et épuré</option>
+        <option value="forest">Forest — Nature et sciences</option>
+        <option value="sunset">Sunset — Chaleureux</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="font">Police de caractères</label>
+      <select id="font">
+        <option value="Aptos">Aptos — Moderne</option>
+        <option value="Arial">Arial — Très lisible</option>
+        <option value="Calibri">Calibri — Classique</option>
+        <option value="Georgia">Georgia — Élégante</option>
+        <option value="Trebuchet MS">Trebuchet MS — Claire</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="titleSize">Taille des titres</label>
+      <select id="titleSize">
+        <option value="32">32 pt — Standard</option>
+        <option value="36" selected>36 pt — Grand</option>
+        <option value="40">40 pt — Très grand</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="bodySize">Taille du texte</label>
+      <select id="bodySize">
+        <option value="20">20 pt — Compact</option>
+        <option value="22" selected>22 pt — Lisible</option>
+        <option value="24">24 pt — Grand</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Aperçu du thème</label>
+      <div id="preview" class="preview theme-midnight">
+        <small>APERÇU DU THÈME</small>
+        <h3>Votre prochain cours</h3>
+        <p>Des diapositives aérées, structurées et faciles à lire.</p>
       </div>
     </div>
 
-    <div class="grid">
-      <div>
-        <label for="titleSize">Taille des titres</label>
-        <select id="titleSize">
-          <option value="32">32 pt — Standard</option>
-          <option value="36" selected>36 pt — Grand</option>
-          <option value="40">40 pt — Très grand</option>
-        </select>
-      </div>
-      <div>
-        <label for="bodySize">Taille du texte</label>
-        <select id="bodySize">
-          <option value="20">20 pt</option>
-          <option value="22" selected>22 pt — Lisible</option>
-          <option value="24">24 pt — Grand</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="preview">
-      <div class="eyebrow">Aperçu du thème</div>
-      <h3 id="sampleTitle">Votre prochain cours</h3>
-      <p>Des diapositives aérées, structurées et faciles à lire.</p>
-    </div>
-
-    <button id="generate">Générer le PowerPoint (.pptx)</button>
-    <div id="status" class="status" role="status"></div>
+    <button id="generateBtn">Générer le PowerPoint (.pptx)</button>
+    <div id="status" class="notice" role="status" aria-live="polite"></div>
+    <div id="progress" class="progress"></div>
   </section>
 
   <section class="card">
     <h2>Votre présentation</h2>
-    <p class="desc">
+    <p class="muted">
       Le contenu est réparti automatiquement en diapositives.
       Le fichier généré peut être modifié dans PowerPoint.
     </p>
-    <button id="download" class="secondary" disabled>
+    <button id="downloadBtn" class="secondary" disabled>
       Télécharger le PowerPoint
     </button>
   </section>
 </main>
 
-<footer>
-  LessonToPPT · Première version expérimentale
-</footer>
+<footer>LessonToPPT · Version expérimentale</footer>
 
-<!-- Bibliothèques de conversion -->
+<!-- Bibliothèques externes -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 
 <script>
-const $ = id => document.getElementById(id);
-let pptxBlob = null;
-let pptxName = "LessonToPPT.pptx";
+"use strict";
 
-if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-}
+const $ = id => document.getElementById(id);
+
+let generatedBlob = null;
+let generatedName = "LessonToPPT.pptx";
 
 const themes = {
-  midnight: { bg:"111C39", title:"FFFFFF", text:"E0E7F7", accent:"7887FF" },
-  minimal:  { bg:"FFFFFF", title:"17233E", text:"45516A", accent:"5865E8" },
-  forest:   { bg:"102D27", title:"FFFFFF", text:"DCEFE7", accent:"63C7A4" },
-  sunset:   { bg:"FFF8F4", title:"512D35", text:"654C53", accent:"E67E68" }
+  midnight: {
+    bg: "102D27", fg: "FFFFFF", accent: "A6B8FF"
+  },
+  minimal: {
+    bg: "FFFFFF", fg: "202943", accent: "5865E9"
+  },
+  forest: {
+    bg: "E4F0E5", fg: "214B36", accent: "397B55"
+  },
+  sunset: {
+    bg: "FFF0E6", fg: "843F36", accent: "E17A57"
+  }
 };
 
-function updatePreview() {
-  const t = themes[$("style").value];
-  const box = document.querySelector(".preview");
-  box.style.background = "#" + t.bg;
-  box.style.color = "#" + t.title;
-  $("sampleTitle").style.color = "#" + t.title;
-  box.querySelector("p").style.color = "#" + t.text;
+function showStatus(message, type = "info") {
+  const box = $("status");
+  box.textContent = message;
+  box.className = "notice " + type;
 }
-$("style").addEventListener("change", updatePreview);
+
+function setProgress(message) {
+  $("progress").textContent = message;
+}
+
+function updatePreview() {
+  const themeName = $("theme").value;
+  const theme = themes[themeName];
+  const preview = $("preview");
+
+  preview.className = "preview theme-" + themeName;
+  preview.querySelector("h3").style.fontFamily = $("font").value;
+  preview.querySelector("h3").style.fontSize =
+    Math.max(29, Number($("titleSize").value) - 1) + "px";
+  preview.querySelector("p").style.fontFamily = $("font").value;
+  preview.querySelector("p").style.fontSize =
+    Math.max(18, Number($("bodySize").value) - 1) + "px";
+}
+
+["theme", "font", "titleSize", "bodySize"].forEach(id => {
+  $(id).addEventListener("change", updatePreview);
+});
 updatePreview();
 
-function setStatus(message) {
-  $("status").textContent = message;
+function getPptxConstructor() {
+  // Le nom global dépend de la version et du bundle chargé.
+  return window.pptxgen ||
+         window.PptxGenJS ||
+         window.pptxgenjs ||
+         null;
+}
+
+function checkLibraries() {
+  const missing = [];
+
+  if (!window.pdfjsLib) missing.push("PDF.js");
+  if (!window.mammoth) missing.push("Mammoth.js");
+  if (typeof getPptxConstructor() !== "function") {
+    missing.push("PptxGenJS");
+  }
+
+  if (missing.length) {
+    throw new Error(
+      "Bibliothèque(s) indisponible(s) : " + missing.join(", ") +
+      ". Vérifiez votre connexion Internet, puis rechargez la page."
+    );
+  }
 }
 
 async function extractPDF(file) {
-  if (!window.pdfjsLib) {
-    throw new Error("La bibliothèque PDF n'a pas été chargée. Vérifiez Internet et rechargez la page.");
-  }
+  const buffer = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({
+    data: new Uint8Array(buffer)
+  }).promise;
 
-  const data = new Uint8Array(await file.arrayBuffer());
-  const pdf = await pdfjsLib.getDocument({data}).promise;
-  const pages = [];
+  const paragraphs = [];
 
-  for (let i = 1; i <= pdf.numPages; i++) {
-    setStatus("Lecture du PDF : page " + i + " / " + pdf.numPages);
-    const page = await pdf.getPage(i);
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+    setProgress("Lecture du PDF : page " + pageNumber + "/" + pdf.numPages);
+
+    const page = await pdf.getPage(pageNumber);
     const content = await page.getTextContent();
-    const text = content.items.map(item => item.str).join(" ");
-    if (text.trim()) pages.push(text);
+
+    const text = content.items
+      .map(item => item.str || "")
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (text) paragraphs.push(text);
   }
 
-  return pages.join("\n\n");
+  return paragraphs;
 }
 
 async function extractWord(file) {
-  if (!window.mammoth) {
-    throw new Error("La bibliothèque Word n'a pas été chargée. Vérifiez Internet.");
-  }
-
-  const result = await mammoth.extractRawText({
-    arrayBuffer: await file.arrayBuffer()
+  const buffer = await file.arrayBuffer();
+  const result = await window.mammoth.extractRawText({
+    arrayBuffer: buffer
   });
-  return result.value;
+
+  return result.value
+    .split(/\n+/)
+    .map(s => s.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
 }
 
-function splitIntoSlides(text) {
-  const paragraphs = text
-    .replace(/\r/g, "\n")
-    .split(/\n+/)
-    .map(p => p.replace(/\s+/g, " ").trim())
-    .filter(p => p.length > 0);
-
-  const units = [];
+function splitIntoSlides(paragraphs, maxChars = 650) {
+  const slides = [];
+  let current = [];
 
   for (const paragraph of paragraphs) {
-    // Découpage des paragraphes trop longs.
-    const words = paragraph.split(" ");
-    let current = "";
+    // Découper les très longs paragraphes en parties lisibles.
+    const pieces = paragraph.length > maxChars
+      ? paragraph.match(/.{1,600}(?:\s|$)/g) || [paragraph]
+      : [paragraph];
 
-    for (const word of words) {
-      if ((current + " " + word).trim().length > 360 && current) {
-        units.push(current);
-        current = word;
-      } else {
-        current = (current + " " + word).trim();
+    for (const piece of pieces) {
+      const clean = piece.trim();
+      if (!clean) continue;
+
+      const currentLength = current.join(" ").length;
+
+      if (current.length && currentLength + clean.length > maxChars) {
+        slides.push(current);
+        current = [];
       }
+
+      current.push(clean);
     }
-
-    if (current) units.push(current);
   }
 
-  const chunks = [];
-  for (let i = 0; i < units.length; i += 4) {
-    chunks.push(units.slice(i, i + 4));
-  }
-  return chunks;
+  if (current.length) slides.push(current);
+  return slides;
 }
 
-function makePresentation(title, chunks) {
-  const pptx = new pptxgen();
-  const theme = themes[$("style").value];
+function safeFileName(name) {
+  return name
+    .replace(/\.pptx$/i, "")
+    .replace(/[\\/:*?"<>|]/g, "")
+    .trim()
+    .slice(0, 90) || "LessonToPPT";
+}
+
+function addFooter(slide, pptx, number, theme) {
+  slide.addText(String(number), {
+    x: 12.1, y: 6.85, w: 0.45, h: 0.25,
+    fontFace: $("font").value,
+    fontSize: 10,
+    color: theme.accent,
+    align: "right",
+    margin: 0
+  });
+}
+
+async function makePresentation(paragraphs, fileTitle) {
+  const PptxGen = getPptxConstructor();
+
+  if (typeof PptxGen !== "function") {
+    throw new Error("PptxGenJS n'est pas chargé. Rechargez la page avec Internet.");
+  }
+
+  const pptx = new PptxGen();
+  const theme = themes[$("theme").value];
   const font = $("font").value;
   const titleSize = Number($("titleSize").value);
   const bodySize = Number($("bodySize").value);
 
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "LessonToPPT";
-  pptx.subject = "Présentation créée automatiquement";
-  pptx.title = title;
+  pptx.subject = "Présentation générée à partir d'un cours";
+  pptx.title = fileTitle;
+  pptx.company = "LessonToPPT";
   pptx.lang = "fr-FR";
+
   pptx.theme = {
     headFontFace: font,
     bodyFontFace: font,
@@ -361,166 +413,186 @@ function makePresentation(title, chunks) {
   const cover = pptx.addSlide();
   cover.background = { color: theme.bg };
 
+  cover.addText(fileTitle, {
+    x: 0.8, y: 1.7, w: 11.7, h: 1.5,
+    fontFace: font,
+    fontSize: titleSize + 8,
+    bold: true,
+    color: theme.fg,
+    breakLine: false,
+    valign: "mid",
+    margin: 0.12,
+    fit: "shrink"
+  });
+
+  cover.addText("Cours · Synthèse pédagogique", {
+    x: 0.85, y: 3.5, w: 10.8, h: 0.65,
+    fontFace: font,
+    fontSize: bodySize,
+    color: theme.accent,
+    margin: 0.08,
+    breakLine: false
+  });
+
   cover.addShape(pptx.ShapeType.rect, {
-    x:0, y:0, w:0.16, h:7.5,
-    line:{color:theme.accent},
-    fill:{color:theme.accent}
-  });
-
-  cover.addText("PRÉSENTATION DE COURS", {
-    x:0.8, y:1.4, w:11, h:0.4,
-    fontFace:font, fontSize:13, bold:true,
-    charSpacing:2, color:theme.accent,
-    margin:0
-  });
-
-  cover.addText(title, {
-    x:0.8, y:2.1, w:11.1, h:2.1,
-    fontFace:font, fontSize:titleSize+8,
-    bold:true, color:theme.title,
-    breakLine:false, valign:"mid",
-    margin:0.08, fit:"shrink"
-  });
-
-  cover.addText("Créé avec LessonToPPT", {
-    x:0.85, y:6.35, w:10, h:0.35,
-    fontFace:font, fontSize:13,
-    color:theme.text, margin:0
+    x: 0.85, y: 4.45, w: 2.1, h: 0.09,
+    line: { color: theme.accent, transparency: 100 },
+    fill: { color: theme.accent }
   });
 
   // Diapositives de contenu
+  const chunks = splitIntoSlides(paragraphs);
+
+  if (!chunks.length) {
+    throw new Error("Aucun texte n'a été trouvé dans le fichier.");
+  }
+
   chunks.forEach((items, index) => {
     const slide = pptx.addSlide();
-    slide.background = { color:theme.bg };
-
-    slide.addShape(pptx.ShapeType.rect, {
-      x:0, y:0, w:13.333, h:0.12,
-      line:{color:theme.accent},
-      fill:{color:theme.accent}
-    });
-
-    slide.addText("COURS · " + String(index+1).padStart(2,"0"), {
-      x:0.65, y:0.45, w:11.8, h:0.3,
-      fontFace:font, fontSize:11, bold:true,
-      color:theme.accent, charSpacing:1.5,
-      margin:0
-    });
+    slide.background = { color: theme.bg };
 
     slide.addText("Points essentiels", {
-      x:0.65, y:0.9, w:12, h:0.75,
-      fontFace:font, fontSize:titleSize,
-      bold:true, color:theme.title,
-      margin:0.03, fit:"shrink"
+      x: 0.65, y: 0.35, w: 11.9, h: 0.7,
+      fontFace: font,
+      fontSize: titleSize,
+      bold: true,
+      color: theme.fg,
+      margin: 0.05,
+      fit: "shrink"
     });
 
-    const bulletRuns = [];
-    items.forEach((item, i) => {
-      bulletRuns.push({
-        text:item,
-        options:{
-          bullet:{indent:bodySize},
-          hanging:5,
-          breakLine:true,
-          paraSpaceAfterPt:15,
-          fontFace:font,
-          fontSize:bodySize,
-          color:theme.text
-        }
-      });
+    slide.addShape(pptx.ShapeType.rect, {
+      x: 0.7, y: 1.15, w: 1.35, h: 0.07,
+      line: { color: theme.accent, transparency: 100 },
+      fill: { color: theme.accent }
     });
 
-    slide.addText(bulletRuns, {
-      x:0.8, y:1.95, w:11.7, h:4.75,
-      fontFace:font, fontSize:bodySize,
-      color:theme.text, margin:0.15,
-      valign:"top", breakLine:false,
-      fit:"shrink", paraSpaceAfterPt:15,
-      lineSpacingMultiple:1.15
+    const bulletItems = items.map(text => ({
+      text,
+      options: {
+        bullet: { indent: bodySize },
+        hanging: Math.max(4, bodySize * 0.22),
+        breakLine: true
+      }
+    }));
+
+    slide.addText(bulletItems, {
+      x: 0.8, y: 1.55, w: 11.5, h: 4.95,
+      fontFace: font,
+      fontSize: bodySize,
+      color: theme.fg,
+      breakLine: false,
+      valign: "top",
+      paraSpaceAfterPt: 14,
+      margin: 0.12,
+      lineSpacingMultiple: 1.12,
+      fit: "shrink"
     });
 
-    slide.addText(String(index+2), {
-      x:12.1, y:7.0, w:0.5, h:0.25,
-      fontFace:font, fontSize:10,
-      color:theme.accent, align:"right",
-      margin:0
-    });
+    addFooter(slide, pptx, index + 2, theme);
   });
 
   return pptx;
 }
 
-$("generate").addEventListener("click", async () => {
-  const file = $("lesson").files[0];
+async function generate() {
+  const file = $("lessonFile").files[0];
 
   if (!file) {
-    setStatus("Veuillez d'abord sélectionner un fichier PDF ou DOCX.");
+    showStatus("Veuillez sélectionner un fichier PDF ou Word.", "error");
     return;
   }
 
-  $("generate").disabled = true;
-  $("download").disabled = true;
-  pptxBlob = null;
+  const extension = file.name.split(".").pop().toLowerCase();
+
+  if (!["pdf", "docx"].includes(extension)) {
+    showStatus("Format non pris en charge. Choisissez un PDF ou un DOCX.", "error");
+    return;
+  }
+
+  const button = $("generateBtn");
+  button.disabled = true;
+  $("downloadBtn").disabled = true;
+  generatedBlob = null;
+  setProgress("");
+  showStatus("Vérification des bibliothèques...", "info");
 
   try {
-    setStatus("Préparation du document...");
+    checkLibraries();
 
-    const name = file.name.toLowerCase();
-    let text;
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
 
-    if (name.endsWith(".pdf")) {
-      text = await extractPDF(file);
-    } else if (name.endsWith(".docx")) {
-      text = await extractWord(file);
+    let paragraphs;
+
+    if (extension === "pdf") {
+      paragraphs = await extractPDF(file);
     } else {
-      throw new Error("Format non pris en charge. Utilisez PDF ou DOCX.");
+      setProgress("Lecture du document Word...");
+      paragraphs = await extractWord(file);
     }
 
-    if (!text || text.trim().length < 20) {
-      throw new Error("Aucun texte suffisant trouvé. Ce PDF est peut-être un scan nécessitant une reconnaissance OCR.");
+    if (!paragraphs.length) {
+      throw new Error(
+        "Aucun texte détecté. Si le PDF contient uniquement des images, un OCR sera nécessaire."
+      );
     }
 
-    const title = file.name.replace(/\.(pdf|docx)$/i, "")
-      .replace(/[_-]+/g, " ");
+    const title = $("presentationTitle").value.trim() ||
+      file.name.replace(/\.(pdf|docx)$/i, "");
 
-    const chunks = splitIntoSlides(text);
+    setProgress("Création des diapositives...");
+    const pptx = await makePresentation(paragraphs, title);
 
-    if (!chunks.length) {
-      throw new Error("Impossible de répartir le texte en diapositives.");
+    setProgress("Préparation du fichier PowerPoint...");
+    const blob = await pptx.write({ outputType: "blob" });
+
+    if (!(blob instanceof Blob) || blob.size === 0) {
+      throw new Error("Le fichier PowerPoint généré est vide.");
     }
 
-    setStatus("Création de " + (chunks.length + 1) + " diapositives...");
+    generatedBlob = blob;
+    generatedName = safeFileName(title) + ".pptx";
+    $("downloadBtn").disabled = false;
 
-    const pptx = makePresentation(title, chunks);
-    const blob = await pptx.write({ outputType:"blob" });
-
-    pptxBlob = blob;
-    pptxName = title.replace(/[^\p{L}\p{N} _-]/gu, "").trim()
-      .slice(0,80) + ".pptx";
-
-    $("download").disabled = false;
-    setStatus("Terminé ! Votre présentation est prête : " +
-      (chunks.length + 1) + " diapositives. Appuyez sur Télécharger.");
+    showStatus(
+      "Présentation créée avec succès ! Vous pouvez maintenant la télécharger.",
+      "success"
+    );
+    setProgress("Diapositives de contenu : " + splitIntoSlides(paragraphs).length);
   } catch (error) {
-    console.error(error);
-    setStatus("Erreur : " + (error.message || "Une erreur est survenue."));
+    console.error("LessonToPPT error:", error);
+    showStatus(
+      "Erreur : " + (error && error.message ? error.message : String(error)),
+      "error"
+    );
+    setProgress("Vérifiez la connexion Internet et réessayez.");
   } finally {
-    $("generate").disabled = false;
+    button.disabled = false;
   }
-});
+}
 
-$("download").addEventListener("click", () => {
-  if (!pptxBlob) return;
+function downloadPresentation() {
+  if (!generatedBlob) {
+    showStatus("Générez d'abord une présentation.", "error");
+    return;
+  }
 
-  const url = URL.createObjectURL(pptxBlob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = pptxName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  const url = URL.createObjectURL(generatedBlob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = generatedName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 
   setTimeout(() => URL.revokeObjectURL(url), 30000);
-});
+}
+
+$("generateBtn").addEventListener("click", generate);
+$("downloadBtn").addEventListener("click", downloadPresentation);
 </script>
 </body>
 </html>
